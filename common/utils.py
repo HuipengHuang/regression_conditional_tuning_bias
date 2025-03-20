@@ -4,6 +4,8 @@ import random
 from torchvision.transforms import transforms
 from torch.utils.data import DataLoader, Subset, random_split
 import os
+
+
 def set_seed(seed):
     np.random.seed(seed)
     random.seed(seed)
@@ -38,6 +40,7 @@ def build_dataset(args):
     cal_dataset, test_dataset = random_split(cal_test_dataset, [cal_size, test_size])
 
     return train_dataset, cal_dataset, test_dataset, num_class
+
 
 def split_dataloader(original_dataloader, split_ratio=0.5):
         """

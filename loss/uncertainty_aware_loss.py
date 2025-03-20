@@ -6,6 +6,8 @@ from torchsort import soft_rank, soft_sort
 
 REG_STRENGTH = 0.1
 B = 50
+
+
 class UniformMatchingLoss(nn.Module):
   """ Custom loss function
     Copy from https://github.com/bat-sheva/conformal-learning
@@ -34,6 +36,7 @@ class UniformMatchingLoss(nn.Module):
     i_seq = torch.arange(1.0, 1.0+batch_size,device=x.device)/(batch_size)
     out = torch.max(torch.abs(i_seq - x_sorted))
     return out
+
 
 class UncertaintyAwareLoss(BaseLoss):
     def __init__(self, args, predictor):

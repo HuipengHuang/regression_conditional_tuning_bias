@@ -4,6 +4,7 @@ import torch
 import torch.nn as nn
 import math
 
+
 class Predictor:
     def __init__(self, args, net, adapter_net=None):
         self.score_function = get_score(args)
@@ -19,7 +20,7 @@ class Predictor:
         """ Input calibration dataloader.
             Compute scores for all the calibration data and take the (1 - alpha) quantile."""
         with torch.no_grad():
-            if alpha == None:
+            if alpha is None:
                 alpha = self.alpha
             cal_score = torch.tensor([], device=self.device)
             for data, target in cal_loader:

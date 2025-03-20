@@ -13,6 +13,7 @@ class UncertaintyAwareTrainer(Trainer):
     """
     def __init__(self, args, num_classes):
         super().__init__(args, num_classes)
+
     @overrides
     def train(self, data_loader, epochs):
         """This method is modified because
@@ -35,4 +36,3 @@ class UncertaintyAwareTrainer(Trainer):
                     pred_data, pred_target = pred_batch
                     cal_data, cal_target = cal_batch
                     self.train_batch_with_adapter(torch.cat((pred_data,cal_data), dim=0), torch.cat((pred_target,cal_target), dim=0))
-

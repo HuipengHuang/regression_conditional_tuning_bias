@@ -18,10 +18,11 @@ def build_model(model_type, pretrained, num_classes, device):
     else:
         raise ValueError(f"Unsupported model type: {model_type}")
 
-    # Modify the final layer
-    if hasattr(net, "fc"):  # ResNet & ResNeXt
+    if hasattr(net, "fc"):
+        #  ResNet and ResNeXt
         net.fc = torch.nn.Linear(net.fc.in_features, num_classes)
-    elif hasattr(net, "classifier"):  # DenseNet
+    elif hasattr(net, "classifier"):
+        #  DenseNet
         net.classifier = torch.nn.Linear(net.classifier.in_features, num_classes)
 
     return net.to(device)

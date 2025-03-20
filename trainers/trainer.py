@@ -4,6 +4,8 @@ import models
 from predictors import predictor
 from loss.utils import get_loss_function
 from .adapter import Adapter
+
+
 class Trainer:
     """
     Trainer class that implement all the functions regarding training.
@@ -29,6 +31,8 @@ class Trainer:
         self.loss_function = get_loss_function(args, self.predictor)
 
     def train_batch_without_adapter(self, data, target):
+        #  split train_batch into train_batch_with_adapter and train_batch_without_adapter
+        #  to avoid judging self.adapter is None in the loop.
         data = data.to(self.device)
         target = target.to(self.device)
         logits = self.net(data)
@@ -38,8 +42,6 @@ class Trainer:
         self.optimizer.step()
 
     def train_batch_with_adapter(self, data, target):
-        #  split train_batch into train_batch_with_adapter and train_batch_without_adapter
-        #  to avoid judging self.adapter is None in the loop.
         data = data.to(self.device)
         target = target.to(self.device)
         logits = self.adapter.adapter_net(self.net(data))
@@ -51,6 +53,7 @@ class Trainer:
     def train_epoch_without_adapter(self, data_loader):
         for data, target in tqdm(data_loader):
             self.train_batch_without_adapter(data, target)
+
     def train_epoch_with_adapter(self, data_loader):
         for data, target in tqdm(data_loader):
             self.train_batch_with_adapter(data, target)

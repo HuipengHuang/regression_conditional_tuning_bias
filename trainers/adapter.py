@@ -1,5 +1,7 @@
 import torch
 import torch.nn as nn
+
+
 class Adapter(nn.Module):
     def __init__(self, num_classes, device):
         super(Adapter, self).__init__()
@@ -14,7 +16,8 @@ class Adapter(nn.Module):
         sorted_prob, sorted_indices = torch.sort(prob, descending=True)
 
         #  Caluculate r_i - r_(i+1), r is sorted_prob
-        #  A small problem. when i set diffs to sqrt(r_i - r_(i+1)), I suffer from gradient vanishing, the logits will become nan.
+        #  A small problem. when i set diffs to sqrt(r_i - r_(i+1)),
+        #  I suffer from gradient vanishing, the logits will become nan.
         diffs = sorted_prob[:, :-1] - sorted_prob[:, 1:]
 
         diffs = torch.cat((diffs, torch.ones((diffs.shape[0], 1),

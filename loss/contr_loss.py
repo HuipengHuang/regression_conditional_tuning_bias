@@ -2,6 +2,7 @@ from .base_loss import BaseLoss
 import torch
 import torch.nn.functional as F
 
+
 class ConftrLoss(BaseLoss):
     def __init__(self, args, predictor):
         super().__init__()
@@ -44,6 +45,7 @@ class ConftrLoss(BaseLoss):
         loss = torch.log(class_loss + self.size_loss_weight * size_loss)
 
         return loss
+
     def compute_size_loss(self, smooth_pred) -> torch.Tensor:
         size_loss = torch.maximum(torch.sum(smooth_pred,dim=-1) - self.tau, torch.tensor([0], device=smooth_pred.device)).sum()
         return size_loss / self.batch_size
