@@ -30,6 +30,7 @@ class Predictor:
                 logits = self.combined_net(data)
                 prob = torch.softmax(logits, dim=1)
                 batch_score = self.score_function.compute_target_score(prob, target)
+
                 cal_score = torch.cat((cal_score, batch_score), 0)
             N = cal_score.shape[0]
             threshold = torch.quantile(cal_score, math.ceil((1 - alpha) * (N + 1)) / N, dim=0)
@@ -53,6 +54,7 @@ class Predictor:
             total_accuracy = 0
             total_coverage = 0
             total_prediction_set_size = 0
+
             for data, target in test_loader:
                 data, target = data.to(self.device), target.to(self.device)
 
@@ -62,7 +64,7 @@ class Predictor:
                 total_accuracy += (prediction == target).sum().item()
 
                 batch_score = self.score_function(prob)
-                prediction_set = (batch_score < self.threshold)
+                prediction_set = (batch_score <= self.threshold)
                 total_coverage += prediction_set[torch.arange(target.shape[0]), target].sum().item()
                 total_prediction_set_size += prediction_set.sum().item()
 

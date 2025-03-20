@@ -15,5 +15,6 @@ class CAdapterLoss(BaseLoss):
         prob = torch.softmax(logits, dim=1)
         score = self.predictor.score_function(prob)
         target_score = torch.gather(score, dim=1, index=target.unsqueeze(1))
-        loss = torch.sigmoid((target_score.unsqueeze(0) - score) / self.T).sum()
-        return loss / logits.size(0) / logits.size(1)
+
+        loss = torch.sigmoid((target_score.unsqueeze(0) - score) / self.T).mean()
+        return loss

@@ -44,6 +44,7 @@ class Trainer:
     def train_batch_with_adapter(self, data, target):
         data = data.to(self.device)
         target = target.to(self.device)
+
         logits = self.adapter.adapter_net(self.net(data))
         loss = self.loss_function(logits, target)
         self.optimizer.zero_grad()

@@ -26,11 +26,15 @@ class Adapter(nn.Module):
         calibrated_logits = self.adapter_net(prob)
         calibrated_logits[:, :-1] = torch.sigmoid(calibrated_logits[:, :-1])
         calibrated_logits = diffs * calibrated_logits
+
         fitted_logits = torch.zeros_like(logits)
         for i in range(logits.shape[0]):
             sorted_row_prob, row_sorted_indices = sorted_prob[i], sorted_indices[i]
+
             S = torch.zeros(size=(self.num_classes, self.num_classes), device=logits.device)
             S[torch.arange(logits.shape[1]), row_sorted_indices] = 1
+            #  S.T = inverse of S
             fitted_logits[i] = S.T.to(torch.float) @ U @ calibrated_logits[i]
+        #  Residual connection. It would not affect ranking.
         fitted_logits = fitted_logits + logits
         return fitted_logits

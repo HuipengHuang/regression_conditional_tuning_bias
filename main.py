@@ -64,12 +64,15 @@ if seed:
     set_seed(seed)
 
 train_dataset, cal_dataset, test_dataset, num_classes = build_dataset(args)
+
 train_loader = DataLoader(train_dataset, batch_size=args.batch_size, drop_last=True)
 cal_loader = DataLoader(cal_dataset, batch_size=args.batch_size)
 test_loader = DataLoader(test_dataset, batch_size=args.batch_size)
 
 trainer = get_trainer(args, num_classes)
+
 trainer.train(train_loader, args.epochs)
+
 trainer.predictor.calibrate(cal_loader)
 result_dict = trainer.predictor.evaluate(test_loader)
 
