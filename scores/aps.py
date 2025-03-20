@@ -15,6 +15,7 @@ class APS(BaseScore):
         if self.random:
             #  Generate randomness
             aps_score -= torch.rand(size=aps_score.shape, device=aps_score.device) * ordered_prob
+
         _, sorted_indices = torch.sort(indices, descending=False, dim=-1)
         aps_score = aps_score.gather(dim=-1, index=sorted_indices)
         return aps_score

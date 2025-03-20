@@ -20,7 +20,9 @@ class SAPS(BaseScore):
         else:
             u = torch.ones(size=ordered_prob.shape,device=ordered_prob.device)
         saps_score = torch.zeros_like(prob)
+
         saps_score[:,0] = max_prob * u[:, 0]
+
         for i in range(1, ordered_prob.shape[-1]):
             saps_score[:, i] = max_prob + (i - 1 + u[:, i]) * self.weight
 

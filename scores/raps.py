@@ -16,10 +16,13 @@ class RAPS(BaseScore):
         aps_score = torch.cumsum(ordered_prob, dim=-1)
         if self.random:
             aps_score -= torch.rand(size=aps_score.shape, device=aps_score.device) * ordered_prob
+
         regularization = torch.reshape(torch.arange(aps_score.shape[-1]) + 1 - self.k_reg, (1, -1))
+
         raps_score = aps_score + self.weight * torch.maximum(regularization, torch.zeros_like(regularization))
 
         _, sorted_indices = torch.sort(indices, descending=False, dim=-1)
+
         raps_score = raps_score.gather(dim=-1, index=sorted_indices)
         return raps_score
 
