@@ -1,13 +1,18 @@
 import abc
 from scores.utils import get_score
 import torch
+import torch.nn as nn
 import math
 
-
 class Predictor:
-    def __init__(self, args, net):
+    def __init__(self, args, net, adapter_net=None):
         self.score_function = get_score(args)
         self.net = net
+        self.adapter_net = adapter_net
+        if adapter_net:
+            self.combined_net = nn.Sequential(net, adapter_net)
+        else:
+            self.combined_net = net
         self.threshold = None
         self.alpha = args.alpha
         self.device = next(net.parameters()).device
@@ -22,7 +27,7 @@ class Predictor:
             data = data.to(self.device)
             target = target.to(self.device)
 
-            logits = self.net(data)
+            logits = self.combined_net(data)
             prob = torch.softmax(logits, dim=1)
             batch_score = self.score_function.compute_target_score(prob, target)
             cal_score = torch.cat((cal_score, batch_score), 0)
@@ -50,7 +55,7 @@ class Predictor:
             for data, target in test_loader:
                 data, target = data.to(self.device), target.to(self.device)
 
-                logit = self.net(data)
+                logit = self.combined_net(data)
                 prob = torch.softmax(logit, dim=1)
                 prediction = torch.argmax(prob, dim=-1)
                 total_accuracy += (prediction == target).sum().item()
