@@ -38,7 +38,7 @@ class Predictor:
 
     def calibrate_batch_logit(self, logits, target, alpha):
         """Design for conformal training, which needs to compute threshold in every batch"""
-        prob = torch.softmax(logits, dim=1)
+        prob = torch.softmax(logits, dim=-1)
         batch_score = self.score_function.compute_target_score(prob, target)
         N = target.shape[0]
         return torch.quantile(batch_score, math.ceil((1 - alpha) * (N + 1)) / N, dim=0)

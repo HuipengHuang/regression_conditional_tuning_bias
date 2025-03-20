@@ -9,33 +9,33 @@ B = 50
 
 
 class UniformMatchingLoss(nn.Module):
-  """ Custom loss function
-    Copy from https://github.com/bat-sheva/conformal-learning
-  """
-  def __init__(self,):
-    """ Initialize
-    Parameters
-    batch_size : number of samples in each batch
-    """
-    super().__init__()
+      """  Custom loss function
+        Copy from https://github.com/bat-sheva/conformal-learning
+      """
+      def __init__(self,):
+        """ Initialize
+        Parameters
+        batch_size : number of samples in each batch
+        """
+        super().__init__()
 
-  def forward(self, x):
-    """ Compute the loss
-    Parameters
-    ----------
-    x : pytorch tensor of random variables (n)
-    Returns
-    -------
-    loss : cost function value
-    """
-    batch_size = len(x)
-    if batch_size == 0:
-      return 0
-    # Soft-sort the input
-    x_sorted = soft_sort(x.unsqueeze(dim=0), regularization_strength=REG_STRENGTH)
-    i_seq = torch.arange(1.0, 1.0+batch_size,device=x.device)/(batch_size)
-    out = torch.max(torch.abs(i_seq - x_sorted))
-    return out
+      def forward(self, x):
+        """ Compute the loss
+        Parameters
+        ----------
+        x : pytorch tensor of random variables (n)
+        Returns
+        -------
+        loss : cost function value
+        """
+        batch_size = len(x)
+        if batch_size == 0:
+          return 0
+        # Soft-sort the input
+        x_sorted = soft_sort(x.unsqueeze(dim=0), regularization_strength=REG_STRENGTH)
+        i_seq = torch.arange(1.0, 1.0+batch_size,device=x.device)/(batch_size)
+        out = torch.max(torch.abs(i_seq - x_sorted))
+        return out
 
 
 class UncertaintyAwareLoss(BaseLoss):
@@ -51,7 +51,7 @@ class UncertaintyAwareLoss(BaseLoss):
         pred_logit, cal_logit = logits[:pred_size], logits[pred_size:]
         pred_target, cal_target = target[:pred_size], target[pred_size:]
 
-        acc_loss = self.criterion_scores(pred_logit, pred_target)
+        acc_loss = self.compute_accuracy_loss(pred_logit, pred_target)
 
         train_loss_scores, train_loss_sizes = self.compute_loss_score(cal_logit, cal_target)
 
@@ -74,7 +74,7 @@ class UncertaintyAwareLoss(BaseLoss):
         """Copy from https://github.com/bat-sheva/conformal-learning"""
         n = len(rank)
         K = z.shape[1]
-        I = torch.tile(torch.arange(K, device=self.device), (n, 1))
+        I = torch.tile(torch.arange(K, device=z.device), (n, 1))
         # Note: this function is vectorized to avoid a loop
         weight = self.soft_indicator(I.T, rank).T
         weight = weight * z
@@ -88,7 +88,7 @@ class UncertaintyAwareLoss(BaseLoss):
         """
         n, K = proba_values.shape
         # Break possible ties at random (it helps with the soft sorting)
-        proba_values = proba_values + 1e-6 * torch.rand(proba_values.shape, dtype=float, device=self.device)
+        proba_values = proba_values + 1e-6 * torch.rand(proba_values.shape, dtype=float, device=proba_values.device)
         # Normalize the probabilities again
         proba_values = proba_values / torch.sum(proba_values, 1)[:, None]
         # Sorting and ranking
@@ -103,7 +103,7 @@ class UncertaintyAwareLoss(BaseLoss):
         # Compute the PMF of the observed labels
         prob_final_t = self.soft_indexing(prob_sort_t, ranks_t)
         # Compute the conformity scores
-        scores_t = 1.0 - prob_cum_t + prob_final_t * torch.rand(n, dtype=float, device=self.device)
+        scores_t = 1.0 - prob_cum_t + prob_final_t * torch.rand(n, dtype=float, device=proba_values.device)
         # Note: the following part is new
         # Sort the conformity scores
         n = len(scores_t)

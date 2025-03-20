@@ -1,7 +1,7 @@
 from .base_loss import BaseLoss
 import torch
 import torch.nn.functional as F
-
+import torch.nn as nn
 
 class ConftrLoss(BaseLoss):
     def __init__(self, args, predictor):
@@ -42,13 +42,12 @@ class ConftrLoss(BaseLoss):
         size_loss = self.compute_size_loss(smooth_pred)
 
         class_loss = self.compute_classification_loss(smooth_pred, pred_target)
-        loss = torch.log(class_loss + self.size_loss_weight * size_loss)
-
+        loss = torch.log(class_loss + self.size_loss_weight * size_loss + 1e-8)
         return loss
 
     def compute_size_loss(self, smooth_pred) -> torch.Tensor:
-        size_loss = torch.maximum(torch.sum(smooth_pred,dim=-1) - self.tau, torch.tensor([0], device=smooth_pred.device)).sum()
-        return size_loss / self.batch_size
+        size_loss = torch.maximum(torch.sum(smooth_pred,dim=-1) - self.tau, torch.tensor([0], device=smooth_pred.device)).mean()
+        return size_loss
 
     def compute_classification_loss(self, smooth_pred, target):
         one_hot_labels = F.one_hot(target, num_classes=smooth_pred.shape[1]).float()
@@ -57,5 +56,5 @@ class ConftrLoss(BaseLoss):
         l1 = (1 - smooth_pred) * one_hot_labels * loss_matrix[target]
         l2 = smooth_pred * (1 - one_hot_labels) * loss_matrix[target]
 
-        loss = torch.sum(torch.maximum(l1 + l2, torch.zeros_like(l1, device=smooth_pred.device)), dim=1)
+        loss = torch.sum(torch.maximum(l1 + l2, torch.zeros_like(l1)), dim=1)
         return torch.mean(loss)
