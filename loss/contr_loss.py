@@ -14,12 +14,12 @@ class ConftrLoss(BaseLoss):
             self.T = args.temperature
 
         if args.size_loss_weight is None:
-            self.size_loss_weight = 1
+            raise ValueError("Please specify a size_loss_weight")
         else:
             self.size_loss_weight = args.size_loss_weight
 
         if args.tau is None:
-            self.tau = 1
+            raise ValueError("Please specify a tau.")
         else:
             self.tau = args.tau
 
