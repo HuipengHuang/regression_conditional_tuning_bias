@@ -1,6 +1,8 @@
 from .contr_loss import ConftrLoss
 from .uncertainty_aware_loss import UncertaintyAwareLoss
+from .cadapter_loss import CAdapterLoss
 import torch.nn as nn
+import torch
 def get_loss_function(args, predictor):
     if args.loss == "conftr":
         assert args.size_loss_weight is not None, print("Please specify a size_loss_weight")
@@ -9,7 +11,9 @@ def get_loss_function(args, predictor):
         assert args.tau >= 0, print("Tau should be greater than or equal to 0.")
         return ConftrLoss(args, predictor)
 
-    if args.loss == "ua":
+    elif args.loss == "ua":
         return UncertaintyAwareLoss(args, predictor)
-    if args.loss == "standard":
+    elif args.loss == "cadapter":
+        return CAdapterLoss(args, predictor)
+    elif args.loss == "standard":
         return nn.CrossEntropyLoss()

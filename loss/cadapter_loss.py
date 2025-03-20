@@ -5,7 +5,10 @@ class CAdapterLoss(BaseLoss):
     def __init__(self, args, predictor):
         super().__init__()
         self.predictor = predictor
-        self.T = args.T
+        if args.temperature is None:
+            self.T = 1
+        else:
+            self.T = args.temperature
 
     def forward(self, logits, target):
         prob = torch.softmax(logits, dim=1)
