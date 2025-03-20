@@ -1,14 +1,14 @@
 import torch.nn as nn
 from overrides import overrides
 import torch
-from trainer import Trainer
-from uncertainty_aware_trainer import UncertaintyAwareTrainer
+from .trainer import Trainer
+from .uncertainty_aware_trainer import UncertaintyAwareTrainer
 
 class Adapter(nn.Module):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes, device):
         super(Adapter, self).__init__()
         self.num_classes = num_classes
-        self.fc = nn.Linear(in_features=num_classes, out_features=num_classes, bias=True)
+        self.fc = nn.Linear(in_features=num_classes, out_features=num_classes, bias=True, device=device)
 
     def forward(self, logits):
         prob = torch.softmax(logits, dim=-1)
@@ -33,25 +33,28 @@ class Adapter(nn.Module):
         return fitted_logits
 
 
-class BaseAdapterTrainer:
+class AdapterTrainer(Trainer):
     """
-    Base class for trainers that use an adapter.
-    """
+    Paper:  C-ADAPTER: ADAPTING DEEP CLASSIFIERS FOR EFFICIENT CONFORMAL PREDICTION SETS
+    Link: Withdrawn?"""
+
     def __init__(self, args, num_classes):
-        self.adapter = Adapter(num_classes)
-        self.train_adapter = args.train_adapter
-        self.train_net = args.train_net
+        super().__init__(args, num_classes)
+        self.adapter = Adapter(num_classes, self.device)
+        if args.train_adapter is None or args.train_net is None:
+            raise ValueError('Please specify train_net and train_adapter')
+        self.train_adapter = (args.train_adapter == "True")
+        self.train_net = (args.train_net == "True")
         self.set_train_mode()
 
     def set_train_mode(self):
-        """Set the training mode for the adapter and the network."""
         for param in self.adapter.parameters():
             param.requires_grad = self.train_adapter
         for param in self.net.parameters():
             param.requires_grad = self.train_net
 
+    @overrides
     def train_batch(self, data, target):
-        """Train a batch with the adapter."""
         data, target = data.to(self.device), target.to(self.device)
         logits = self.adapter(self.net(data))
         loss = self.loss_function(logits, target)
@@ -59,23 +62,28 @@ class BaseAdapterTrainer:
         loss.backward()
         self.optimizer.step()
 
-class AdapterTrainer(BaseAdapterTrainer, Trainer):
-    """
-    AdapterTrainer that inherits from Trainer and BaseAdapterTrainer.
-    """
-    def __init__(self, args, num_classes):
-        # Initialize Trainer
-        Trainer.__init__(self, args, num_classes)
-        # Initialize BaseAdapterTrainer
-        BaseAdapterTrainer.__init__(self, args, num_classes)
 
-
-class UAAdapterTrainer(BaseAdapterTrainer, UncertaintyAwareTrainer):
-    """
-    UAAdapterTrainer that inherits from UncertaintyAwareTrainer and BaseAdapterTrainer.
-    """
+class UAAdapterTrainer(UncertaintyAwareTrainer):
     def __init__(self, args, num_classes):
-        # Initialize UncertaintyAwareTrainer
-        UncertaintyAwareTrainer.__init__(self, args, num_classes)
-        # Initialize BaseAdapterTrainer
-        BaseAdapterTrainer.__init__(self, args, num_classes)
+        super().__init__(args, num_classes)
+        self.adapter = Adapter(num_classes, self.device)
+        if args.train_adapter is None or args.train_net is None:
+            raise ValueError('Please specify train_net and train_adapter')
+        self.train_adapter = (args.train_adapter == "True")
+        self.train_net = (args.train_net == "True")
+        self.set_train_mode()
+
+    def set_train_mode(self):
+        for param in self.adapter.parameters():
+            param.requires_grad = self.train_adapter
+        for param in self.net.parameters():
+            param.requires_grad = self.train_net
+
+    @overrides
+    def train_batch(self, data, target):
+        data, target = data.to(self.device), target.to(self.device)
+        logits = self.adapter(self.net(data))
+        loss = self.loss_function(logits, target)
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()

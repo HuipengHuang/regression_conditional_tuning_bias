@@ -11,6 +11,7 @@ parser.add_argument("--dataset", type=str, default="cifar100", choices=["cifar10
 parser.add_argument('--seed', type=int, default=None)
 parser.add_argument("--pretrained", default="False", type=str, choices=["True", "False"])
 parser.add_argument("--save", default="False", choices=["True", "False"], type=str)
+parser.add_argument("--algorithm",'-alg', default="standard", choices=["standard", "uatr"], help="Uncertainty aware training use uatr. Otherwise use standard")
 
 #  Training configuration
 parser.add_argument("--optimizer", type=str, default="sgd", choices=["sgd", "adam"], help="Choose optimizer.")
@@ -20,7 +21,6 @@ parser.add_argument("--batch_size",'-bsz', type=int, default=32)
 parser.add_argument("--momentum", type=float, default=0, help='Momentum')
 parser.add_argument("--weight_decay", type=float, default=0, help='Weight decay')
 parser.add_argument("--loss", type=str,default='standard', choices=['standard','conftr','ua'], help='Loss function you want to use. ua means uncertainty aware')
-parser.add_argument("--algorithm",'-alg', default="standard", choices=["standard", "uatr"], help="Uncertainty aware training use uatr. Otherwise use standard")
 parser.add_argument("--temperature",'-T', type=float, default=None, help='Temperature scaling')
 
 #  Hyperpatameters for Conformal Prediction

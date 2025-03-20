@@ -1,6 +1,6 @@
 from .trainer import Trainer
 from .uncertainty_aware_trainer import UncertaintyAwareTrainer
-from adapter_trainer import AdapterTrainer, UAAdapterTrainer
+from .adapter_trainer import AdapterTrainer, UAAdapterTrainer
 def get_trainer(args, num_classes):
     if args.algorithm =="uatr" :
         if args.adapter == "False":
