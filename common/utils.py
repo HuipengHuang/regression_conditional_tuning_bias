@@ -64,7 +64,8 @@ def split_dataloader(original_dataloader, split_ratio=0.5):
         subset2 = Subset(dataset, indices_subset2)
 
         return subset1, subset2
-##cifar10_symmetric_05_resnet34_test_clip_training_results
+
+
 def save_exp_result(args, trainer, result_dict, path=None):
     if path is None:
         path = f"./experiment/{args.algorithm}"
@@ -80,4 +81,5 @@ def save_exp_result(args, trainer, result_dict, path=None):
             if v is not None:
                 f.write(f"{k}: {v}\n")
     torch.save(trainer.net.state_dict(), os.path.join(save_path, "_model.pth"))
-
+    if args.adapter == "True":
+        torch.save(trainer.adapter.adapter_net.state_dict(), os.path.join(save_path, "_adapter.pth"))
