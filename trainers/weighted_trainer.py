@@ -88,6 +88,7 @@ class WeightedTrainer:
                 continue
             torch.save(self.first_net.state_dict(), f"./data/{self.args.model}{i}first_net.pth")
             torch.save(self.final_net.state_dict(), f"./data/{self.args.model}{i}final_net.pth")
+            break
 
         for param in self.first_net.parameters():
             param.requires_grad = False
