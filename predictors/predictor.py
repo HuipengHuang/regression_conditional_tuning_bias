@@ -15,6 +15,7 @@ class Predictor:
         self.threshold = None
         self.alpha = args.alpha
         self.device = next(net.parameters()).device
+        self.args = args
 
     def calibrate(self, cal_loader, alpha=None):
         """ Input calibration dataloader.
@@ -71,8 +72,8 @@ class Predictor:
             accuracy = total_accuracy / len(test_loader.dataset)
             coverage = total_coverage / len(test_loader.dataset)
             avg_set_size = total_prediction_set_size / len(test_loader.dataset)
-            result_dict = {"Top1Accuracy": accuracy,
-                           "AverageSetSize": avg_set_size,
-                           "Coverage": coverage}
+            result_dict = {f"{self.args.score}_Top1Accuracy": accuracy,
+                           f"{self.args.score}_AverageSetSize": avg_set_size,
+                           f"{self.args.score}_Coverage": coverage}
             return result_dict
 

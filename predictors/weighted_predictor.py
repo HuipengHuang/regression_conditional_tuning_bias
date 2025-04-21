@@ -16,6 +16,7 @@ class Weighted_Predictor:
         self.threshold = None
         self.alpha = args.alpha
         self.device = next(net.parameters()).device
+        self.args = args
 
     def calibrate(self, cal_loader, alpha=None):
         """ Input calibration dataloader.
@@ -34,7 +35,7 @@ class Weighted_Predictor:
                 prob = torch.softmax(logits, dim=1)
 
                 weight = self.weight_net(data)
-                weight = torch.softmax(weight)
+                weight = torch.softmax(weight, dim=-1)
 
                 batch_score = self.score_function.compute_target_score(weight, prob, target)
 
@@ -80,8 +81,8 @@ class Weighted_Predictor:
             accuracy = total_accuracy / len(test_loader.dataset)
             coverage = total_coverage / len(test_loader.dataset)
             avg_set_size = total_prediction_set_size / len(test_loader.dataset)
-            result_dict = {"Top1Accuracy": accuracy,
-                           "AverageSetSize": avg_set_size,
-                           "Coverage": coverage}
+            result_dict = {f"{self.args.score}_Top1Accuracy": accuracy,
+                           f"{self.args.score}_AverageSetSize": avg_set_size,
+                           f"{self.args.score}_Coverage": coverage}
             return result_dict
 
