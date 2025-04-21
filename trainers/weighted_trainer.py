@@ -39,6 +39,7 @@ class WeightedTrainer:
         self.num_classes = num_classes
         self.loss_function = get_loss_function(args, self.predictor)
         self.weight_loss_function = my_loss.MyLoss(args, self.predictor)
+        self.args = args
     def train_batch_without_adapter(self, data, target):
         #  split train_batch into train_batch_with_adapter and train_batch_without_adapter
         #  to avoid judging self.adapter is None in the loop.
@@ -76,8 +77,8 @@ class WeightedTrainer:
         else:
             for epoch in range(epochs):
                 self.train_epoch_with_adapter(data_loader)
-        torch.save(self.first_net.state_dict(), "./data/first_net.pth")
-        torch.save(self.final_net.state_dict(), "./data/final_net.pth")
+        torch.save(self.first_net.state_dict(), f"./data/{self.args.model}first_net.pth")
+        torch.save(self.final_net.state_dict(), f"./data/{self.args.model}final_net.pth")
 
         for param in self.first_net.parameters():
             param.requires_grad = False
