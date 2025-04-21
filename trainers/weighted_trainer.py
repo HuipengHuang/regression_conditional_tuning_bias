@@ -1,3 +1,5 @@
+import os
+
 import torch
 import torch.nn as nn
 from tqdm import tqdm
@@ -77,8 +79,15 @@ class WeightedTrainer:
         else:
             for epoch in range(epochs):
                 self.train_epoch_with_adapter(data_loader)
-        torch.save(self.first_net.state_dict(), f"./data/{self.args.model}first_net.pth")
-        torch.save(self.final_net.state_dict(), f"./data/{self.args.model}final_net.pth")
+        i = 0
+        while(True):
+            first_net_path = f"./data/{self.args.model}{i}first_net.pth"
+            final_net_path = f"./data/{self.args.model}{i}final_net.pth"
+            if os.path.exists(first_net_path) or os.path.exists(final_net_path):
+                i += 1
+                continue
+            torch.save(self.first_net.state_dict(), f"./data/{self.args.model}{i}first_net.pth")
+            torch.save(self.final_net.state_dict(), f"./data/{self.args.model}{i}final_net.pth")
 
         for param in self.first_net.parameters():
             param.requires_grad = False
