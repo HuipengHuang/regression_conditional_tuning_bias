@@ -74,6 +74,7 @@ def split_dataloader(original_dataloader, split_ratio=0.5):
 
 def save_exp_result(args, trainer, result_dict, path=None):
     current_time = datetime.datetime.now()
+    print("i am in")
     month_day = current_time.strftime("%b%d")
     if path is None:
         path = f"./experiment/{args.algorithm}"
