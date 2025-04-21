@@ -19,7 +19,7 @@ class RAPS(BaseScore):
 
         regularization = torch.reshape(torch.arange(aps_score.shape[-1]) + 1 - self.k_reg, (1, -1))
 
-        raps_score = aps_score + self.weight * torch.maximum(regularization, torch.zeros_like(regularization))
+        raps_score = aps_score + self.weight * torch.maximum(regularization, torch.zeros_like(regularization, device=prob.device))
 
         _, sorted_indices = torch.sort(indices, descending=False, dim=-1)
 
