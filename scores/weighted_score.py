@@ -1,7 +1,6 @@
-from base_score import BaseScore
-from thr import THR
-from raps import RAPS
-from saps import SAPS
+from .thr import THR
+from .raps import RAPS
+from .saps import SAPS
 import torch
 
 class WeightedScore():
