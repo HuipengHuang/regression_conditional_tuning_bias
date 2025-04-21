@@ -20,8 +20,8 @@ def build_dataset(args):
     if dataset_name == "cifar10":
         from torchvision.datasets import CIFAR10
         num_class = 10
-        train_dataset = CIFAR10(root='./data', train=True, download=True,transform=transforms.Compose([transforms.ToTensor()]))
-        cal_test_dataset = CIFAR10(root='./data', train=False, download=True,
+        train_dataset = CIFAR10(root='/data/dataset', train=True, download=True,transform=transforms.Compose([transforms.ToTensor()]))
+        cal_test_dataset = CIFAR10(root='/data/dataset', train=False, download=True,
                                  transform=transforms.Compose([transforms.ToTensor()]))
     elif dataset_name == "cifar100":
         from torchvision.datasets import CIFAR100
@@ -33,8 +33,8 @@ def build_dataset(args):
     elif dataset_name == "ImageNet":
         from torchvision.datasets import ImageNet
         num_class = 1000
-        train_dataset = ImageNet(root='./data', train=True, download=True,transform=transforms.Compose([transforms.ToTensor()]))
-        cal_test_dataset = ImageNet(root='./data', train=False, download=True,
+        train_dataset = ImageNet(root='/data/dataset', train=True, download=True,transform=transforms.Compose([transforms.ToTensor()]))
+        cal_test_dataset = ImageNet(root='/data/dataset', train=False, download=True,
                                  transform=transforms.Compose([transforms.ToTensor()]))
 
     cal_size = int(len(cal_test_dataset) * args.cal_ratio)
