@@ -93,6 +93,7 @@ class WeightedTrainer:
                 self.weighted_optimizer.zero_grad()
                 loss.backward()
                 self.weighted_optimizer.step()
+                break
 
     def set_train_mode(self, train_adapter, train_net):
         assert self.adapter is not None, print("The trainer does not have an adapter.")
