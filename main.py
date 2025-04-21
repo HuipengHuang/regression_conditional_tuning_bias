@@ -82,6 +82,8 @@ for key, value in result_dict.items():
 if args.save == "True":
     save_exp_result(args, trainer, result_dict)
 for score in ["thr", "raps", "saps"]:
+    if score == "thr":
+        continue
     args.score = score
     print(args.score)
     args.saps_size_penalty_weight = 1
