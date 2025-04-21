@@ -20,25 +20,28 @@ class Weighted_Predictor:
     def calibrate(self, cal_loader, alpha=None):
         """ Input calibration dataloader.
             Compute scores for all the calibration data and take the (1 - alpha) quantile."""
-        if alpha is None:
-                alpha = self.alpha
-        cal_score = torch.tensor([], device=self.device)
-        for data, target in cal_loader:
-            data = data.to(self.device)
-            target = target.to(self.device)
+        self.weight_net.eval()
+        self.combined_net.eval()
+        with torch.no_grad():
+            if alpha is None:
+                    alpha = self.alpha
+            cal_score = torch.tensor([], device=self.device)
+            for data, target in cal_loader:
+                data = data.to(self.device)
+                target = target.to(self.device)
 
-            logits = self.combined_net(data)
-            prob = torch.softmax(logits, dim=1)
+                logits = self.combined_net(data)
+                prob = torch.softmax(logits, dim=1)
 
-            weight = self.weight_net(data)
+                weight = self.weight_net(data)
 
-            batch_score = self.score_function.compute_target_score(weight, prob, target)
+                batch_score = self.score_function.compute_target_score(weight, prob, target)
 
-            cal_score = torch.cat((cal_score, batch_score), 0)
-        N = cal_score.shape[0]
-        threshold = torch.quantile(cal_score, math.ceil((1 - alpha) * (N + 1)) / N, dim=0)
-        self.threshold = threshold
-        return threshold
+                cal_score = torch.cat((cal_score, batch_score), 0)
+            N = cal_score.shape[0]
+            threshold = torch.quantile(cal_score, math.ceil((1 - alpha) * (N + 1)) / N, dim=0)
+            self.threshold = threshold
+            return threshold
 
     def calibrate_batch_logit(self, weight, logits, target, alpha):
         """Design for conformal training, which needs to compute threshold in every batch"""
