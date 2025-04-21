@@ -40,9 +40,9 @@ parser.add_argument("--temperature",'-T', type=float, default=None,
 
 #  Hyperparameter for aps, raps and saps
 parser.add_argument("--random",type=str,default=None,choices=["True","False"])
-parser.add_argument("--raps_size_regularization",type=float, default=None, help='K_reg for raps loss')
-parser.add_argument("--raps_weight",type=float, default=None ,help="lambda for size regularization in raps.")
-parser.add_argument("--saps_weight",type=float, default=None ,help="lambda for size regularization in saps.")
+parser.add_argument("--raps_size_regularization",type=float, default=10, help='K_reg for raps loss')
+parser.add_argument("--raps_weight",type=float, default=1 ,help="lambda for size regularization in raps.")
+parser.add_argument("--saps_weight",type=float, default=1 ,help="lambda for size regularization in saps.")
 
 #  Hyperparameter for uncertainty aware loss
 parser.add_argument("--mu", type=float, default=None,
