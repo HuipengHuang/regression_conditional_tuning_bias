@@ -14,8 +14,6 @@ class WeightedScore():
         thr_score = self.thr_score_function(prob)
         raps_score = self.raps_score_function(prob)
         saps_score = self.saps_score_function(prob)
-        print(weight.shape)
-        print(thr_score.shape)
         score = thr_score * weight[:, 0].view(-1, 1) + raps_score * weight[:, 1].view(-1, 1) + saps_score * weight[:, 2].view(-1, 1)
         return score
 
