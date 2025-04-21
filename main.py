@@ -73,15 +73,17 @@ trainer = get_trainer(args, num_classes)
 
 trainer.train(train_loader, args.epochs)
 
-trainer.predictor.calibrate(cal_loader)
-result_dict = trainer.predictor.evaluate(test_loader)
-
+#trainer.predictor.calibrate(cal_loader)
+#result_dict = trainer.predictor.evaluate(test_loader)
+result_dict = {1:"a"}
 for key, value in result_dict.items():
     print(f'{key}: {value}')
 
 if args.save == "True":
     save_exp_result(args, trainer, result_dict)
 for score in ["thr", "raps", "saps"]:
+    args.score = score
+    print(args.score)
     args.saps_size_penalty_weight = 1
     args.raps_size_penalty_weight = 1
     args.raps_size_regularization = 10

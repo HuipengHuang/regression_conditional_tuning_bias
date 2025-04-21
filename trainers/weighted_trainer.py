@@ -88,6 +88,7 @@ class WeightedTrainer:
                 target = target.to(self.device)
 
                 weights = self.weight_net(data)
+                weights = torch.softmax(weights, dim=-1)
                 logits = self.net(data)
                 loss = self.weight_loss_function.forward(weights, logits, target)
                 self.weighted_optimizer.zero_grad()

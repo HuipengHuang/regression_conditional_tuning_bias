@@ -34,6 +34,7 @@ class Weighted_Predictor:
                 prob = torch.softmax(logits, dim=1)
 
                 weight = self.weight_net(data)
+                weight = torch.softmax(weight)
 
                 batch_score = self.score_function.compute_target_score(weight, prob, target)
 
@@ -67,6 +68,7 @@ class Weighted_Predictor:
                 logit = self.combined_net(data)
                 prob = torch.softmax(logit, dim=-1)
                 weight = self.weight_net(data)
+                weight = torch.softmax(weight, dim=-1)
                 prediction = torch.argmax(prob, dim=-1)
                 total_accuracy += (prediction == target).sum().item()
 
