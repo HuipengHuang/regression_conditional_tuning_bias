@@ -13,8 +13,6 @@ class Weighted_Predictor:
         else:
             self.combined_net = net
         self.weight_net = weight_net
-        for param in self.combined_net.parameters():
-            param.requires_grad = False
         self.threshold = None
         self.alpha = args.alpha
         self.device = next(net.parameters()).device
