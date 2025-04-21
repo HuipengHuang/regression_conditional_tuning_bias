@@ -31,7 +31,7 @@ class WeightedTrainer:
         if args.adapter == "True":
             self.adapter = Adapter(num_classes, self.device)
             self.set_train_mode((args.train_adapter == "True"), (args.train_net == "True"))
-            self.predictor = predictor.Predictor(args, self.net, self.adapter.adapter_net)
+            self.predictor = weighted_predictor.Weighted_Predictor(args, self.net, self.adapter.adapter_net)
         else:
             self.adapter = None
             self.predictor = weighted_predictor.Weighted_Predictor(args, self.net, self.weight_net, adapter_net=None)
