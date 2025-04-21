@@ -16,7 +16,7 @@ class WeightedScore():
         saps_score = self.saps_score_function(prob)
         print(weight.shape)
         print(thr_score.shape)
-        score = thr_score * weight[:, 0] + raps_score * weight[:, 1] + saps_score * weight[:, 2]
+        score = thr_score * weight[:, 0].view(-1, 1) + raps_score * weight[:, 1].view(-1, 1) + saps_score * weight[:, 2].view(-1, 1)
         return score
 
     def compute_target_score(self, weight, prob, target):
