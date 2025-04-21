@@ -1,17 +1,20 @@
-
+import abc
 from scores.utils import get_score
 import torch
 import torch.nn as nn
 import math
 
 
-class Predictor:
-    def __init__(self, args, net, adapter_net=None):
+class Weighted_Predictor:
+    def __init__(self, args, net, weight_net, adapter_net=None):
         self.score_function = get_score(args)
         if adapter_net:
             self.combined_net = nn.Sequential(net, adapter_net)
         else:
             self.combined_net = net
+        self.weight_net = weight_net
+        for param in self.combined_net.parameters():
+            param.requires_grad = False
         self.threshold = None
         self.alpha = args.alpha
         self.device = next(net.parameters()).device
@@ -19,28 +22,30 @@ class Predictor:
     def calibrate(self, cal_loader, alpha=None):
         """ Input calibration dataloader.
             Compute scores for all the calibration data and take the (1 - alpha) quantile."""
-        with torch.no_grad():
-            if alpha is None:
+        if alpha is None:
                 alpha = self.alpha
-            cal_score = torch.tensor([], device=self.device)
-            for data, target in cal_loader:
-                data = data.to(self.device)
-                target = target.to(self.device)
+        cal_score = torch.tensor([], device=self.device)
+        for data, target in cal_loader:
+            data = data.to(self.device)
+            target = target.to(self.device)
 
-                logits = self.combined_net(data)
-                prob = torch.softmax(logits, dim=1)
-                batch_score = self.score_function.compute_target_score(prob, target)
+            logits = self.combined_net(data)
+            prob = torch.softmax(logits, dim=1)
 
-                cal_score = torch.cat((cal_score, batch_score), 0)
-            N = cal_score.shape[0]
-            threshold = torch.quantile(cal_score, math.ceil((1 - alpha) * (N + 1)) / N, dim=0)
-            self.threshold = threshold
-            return threshold
+            weight = self.weight_net(data)
 
-    def calibrate_batch_logit(self, logits, target, alpha):
+            batch_score = self.score_function.compute_target_score(weight, prob, target)
+
+            cal_score = torch.cat((cal_score, batch_score), 0)
+        N = cal_score.shape[0]
+        threshold = torch.quantile(cal_score, math.ceil((1 - alpha) * (N + 1)) / N, dim=0)
+        self.threshold = threshold
+        return threshold
+
+    def calibrate_batch_logit(self, weight, logits, target, alpha):
         """Design for conformal training, which needs to compute threshold in every batch"""
         prob = torch.softmax(logits, dim=-1)
-        batch_score = self.score_function.compute_target_score(prob, target)
+        batch_score = self.score_function.compute_target_score(weight, prob, target)
         N = target.shape[0]
         return torch.quantile(batch_score, math.ceil((1 - alpha) * (N + 1)) / N, dim=0)
 
@@ -60,10 +65,11 @@ class Predictor:
 
                 logit = self.combined_net(data)
                 prob = torch.softmax(logit, dim=-1)
+                weight = self.weight_net(data)
                 prediction = torch.argmax(prob, dim=-1)
                 total_accuracy += (prediction == target).sum().item()
 
-                batch_score = self.score_function(prob)
+                batch_score = self.score_function(weight, prob)
                 prediction_set = (batch_score <= self.threshold)
                 total_coverage += prediction_set[torch.arange(target.shape[0]), target].sum().item()
                 total_prediction_set_size += prediction_set.sum().item()

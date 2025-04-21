@@ -33,6 +33,8 @@ def get_score(args):
             (args.random == "True"),
             weight=args.saps_size_penalty_weight,
         )
+    elif args.score == "weight_score":
+        return scores.weighted_score.WeightedScore()
 
     # If no valid score function is found
     raise RuntimeError("Cannot find a suitable score function.")

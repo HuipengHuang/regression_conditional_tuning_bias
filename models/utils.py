@@ -20,10 +20,10 @@ def build_model(model_type, pretrained, num_classes, device):
 
     if hasattr(net, "fc"):
         #  ResNet and ResNeXt
-        net.fc = torch.nn.Linear(net.fc.in_features, num_classes)
+        net.fc = torch.nn.Identity()
     elif hasattr(net, "classifier"):
         #  DenseNet
-        net.classifier = torch.nn.Linear(net.classifier.in_features, num_classes)
+        net.classifier = torch.nn.Identity()
 
     return net.to(device)
 
