@@ -38,7 +38,7 @@ class WeightedTrainer:
 
         self.num_classes = num_classes
         self.loss_function = get_loss_function(args, self.predictor)
-        self.weight_loss_function = my_loss.MyLoss(args, predictor)
+        self.weight_loss_function = my_loss.MyLoss(args, self.predictor)
     def train_batch_without_adapter(self, data, target):
         #  split train_batch into train_batch_with_adapter and train_batch_without_adapter
         #  to avoid judging self.adapter is None in the loop.
