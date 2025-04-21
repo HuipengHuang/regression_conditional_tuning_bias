@@ -3,6 +3,7 @@ import torch.nn as nn
 from tqdm import tqdm
 import models
 from predictors import predictor
+from predictors import weighted_predictor
 from loss.utils import get_loss_function
 from .adapter import Adapter
 from loss import my_loss
@@ -33,7 +34,7 @@ class WeightedTrainer:
             self.predictor = predictor.Predictor(args, self.net, self.adapter.adapter_net)
         else:
             self.adapter = None
-            self.predictor = predictor.Predictor(args, self.net)
+            self.predictor = weighted_predictor.Weighted_Predictor(args, self.net, self.weight_net, adapter_net=None)
 
         self.num_classes = num_classes
         self.loss_function = get_loss_function(args, self.predictor)
@@ -75,8 +76,8 @@ class WeightedTrainer:
         else:
             for epoch in range(epochs):
                 self.train_epoch_with_adapter(data_loader)
-        torch.save(self.first_net.state_dict(), "first_net.pth")
-        torch.save(self.final_net.state_dict(), "final_net.pth")
+        torch.save(self.first_net.state_dict(), "./data/first_net.pth")
+        torch.save(self.final_net.state_dict(), "./data/final_net.pth")
 
         for param in self.first_net:
             param.requires_grad = False
@@ -88,7 +89,7 @@ class WeightedTrainer:
 
                 weights = self.weight_net(data)
                 logits = self.net(data)
-                loss = self.weight_loss_function(weights, logits, target)
+                loss = self.weight_loss_function.forward(weights, logits, target)
                 self.weighted_optimizer.zero_grad()
                 loss.backward()
                 self.weighted_optimizer.step()

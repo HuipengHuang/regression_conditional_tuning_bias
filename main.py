@@ -2,7 +2,7 @@ import argparse
 from torch.utils.data import DataLoader
 from common.utils import build_dataset, set_seed, save_exp_result
 from trainers.utils import get_trainer
-
+from predictors import predictor
 
 parser = argparse.ArgumentParser()
 
@@ -27,7 +27,7 @@ parser.add_argument("--loss", type=str,default='standard', choices=['standard','
 
 #  Hyperpatameters for Conformal Prediction
 parser.add_argument("--alpha", type=float, default=0.1, help="Error Rate")
-parser.add_argument("--score", type=str, default="thr", choices=["thr", "aps", "raps", "saps"])
+parser.add_argument("--score", type=str, default="thr", choices=["thr", "aps", "raps", "saps", "weight_score"])
 parser.add_argument("--cal_ratio", type=float, default=0.5,
                     help="Ratio of calibration data's size. (1 - cal_ratio) means ratio of test data's size")
 
@@ -81,3 +81,14 @@ for key, value in result_dict.items():
 
 if args.save == "True":
     save_exp_result(args, trainer, result_dict)
+for score in ["thr", "raps", "saps"]:
+    args.saps_size_penalty_weight = 1
+    args.raps_size_penalty_weight = 1
+    args.raps_size_regularization = 10
+    trainer.predictor = predictor.Predictor(args, trainer.net, adapter_net=None)
+    trainer.predictor.calibrate(cal_loader)
+    result_dict = trainer.predictor.evaluate(test_loader)
+    print("-----")
+    print(f"Score function: {score}")
+    for key, value in result_dict.items():
+        print(f'{key}: {value}')
