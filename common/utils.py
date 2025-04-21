@@ -77,7 +77,7 @@ def save_exp_result(args, trainer, result_dict, path=None):
     os.makedirs(save_path, exist_ok=True)
     with open(os.path.join(save_path, "result.txt"), "w") as f:
         f.write('Epoch, Coverage, Top1 Accuracy, Average Size\n')
-        f.write(f"{args.epochs}, {result_dict["Coverage"]}, {result_dict["Top1Accuracy"]}, {result_dict["AverageSetSize"]}\n")
+        f.write(f"{args.epochs}, {result_dict["Top1Accuracy"]}, {result_dict["AverageSetSize"]}\n")
         f.write("Detailed Setup \n")
         args_dict = vars(args)
         for k, v in args_dict.items():
