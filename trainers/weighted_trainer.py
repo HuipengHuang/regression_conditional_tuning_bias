@@ -15,9 +15,9 @@ class WeightedTrainer:
     def __init__(self, args, num_classes):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.first_net = models.utils.build_model(args.model, (args.pretrained == "True"), num_classes=num_classes, device=self.device)
-        self.final_net = nn.Linear(512, num_classes, device=self.device)
+        self.final_net = nn.Linear(2048, num_classes, device=self.device)
         self.net = nn.Sequential(self.first_net, self.final_net)
-        block = nn.Sequential(nn.Linear(512, 256), nn.ReLU(), nn.Linear(256, 3)).to(self.device)
+        block = nn.Sequential(nn.Linear(2048, 256), nn.ReLU(), nn.Linear(256, 3)).to(self.device)
         self.block = block
         self.weight_net = nn.Sequential(self.first_net, block)
         self.batch_size = args.batch_size
