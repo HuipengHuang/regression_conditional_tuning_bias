@@ -5,6 +5,7 @@ import torch.nn as nn
 
 
 def get_loss_function(args, predictor):
+    i
     if args.loss == "conftr":
         assert args.size_loss_weight is not None, print("Please specify a size_loss_weight")
         assert args.tau is not None, print("Please specify a tau.")
