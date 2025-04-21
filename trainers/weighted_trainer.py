@@ -93,7 +93,7 @@ class WeightedTrainer:
         for param in self.first_net.parameters():
             param.requires_grad = False
 
-        for i in range(10):
+        for i in range(100):
             for data, target in tqdm(data_loader, desc=f"{i}: {10}"):
                 data = data.to(self.device)
                 target = target.to(self.device)
