@@ -98,6 +98,8 @@ class WeightedTrainer:
                 torch.save(self.first_net.state_dict(), first_net_path)
                 torch.save(self.final_net.state_dict(), final_net_path)
                 break
+        for epoch in range(10):
+            self.train_epoch_with_adapter(data_loader)
 
         for param in self.first_net.parameters():
             param.requires_grad = False
