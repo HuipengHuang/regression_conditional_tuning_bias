@@ -9,7 +9,7 @@ class MyLoss():
         self.predictor = predictor
         self.batch_size = args.batch_size
         if args.temperature is None:
-            self.T = 1e-1
+            self.T = 10
         else:
             self.T = args.temperature
 
