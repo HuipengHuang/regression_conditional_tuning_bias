@@ -40,8 +40,7 @@ class MyLoss():
 
         smooth_pred = torch.sigmoid((threshold - pred_score) / self.T)
         size_loss = self.compute_size_loss(smooth_pred)
-        print(size_loss)
-        loss = torch.log(size_loss + 1e-8)
+        loss = size_loss
         return loss
 
     def compute_size_loss(self, smooth_pred) -> torch.Tensor:
