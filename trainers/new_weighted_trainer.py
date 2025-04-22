@@ -101,7 +101,7 @@ class NewWeightedTrainer:
         for param in self.net.parameters():
             param.requires_grad = False
 
-        for i in range(10):
+        for i in range(0):
             for data, target in tqdm(data_loader, desc=f"{i}: {10}"):
                 data = data.to(self.device)
                 target = target.to(self.device)
