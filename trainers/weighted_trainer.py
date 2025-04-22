@@ -98,13 +98,11 @@ class WeightedTrainer:
                 torch.save(self.first_net.state_dict(), first_net_path)
                 torch.save(self.final_net.state_dict(), final_net_path)
                 break
-        for epoch in range(10):
-            self.train_epoch_without_adapter(data_loader)
 
         for param in self.first_net.parameters():
             param.requires_grad = False
 
-        for i in range(100):
+        for i in range(0):
             for data, target in tqdm(data_loader, desc=f"{i}: {10}"):
                 data = data.to(self.device)
                 target = target.to(self.device)
