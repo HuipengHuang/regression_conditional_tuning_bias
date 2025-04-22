@@ -73,7 +73,7 @@ test_loader = DataLoader(test_dataset, batch_size=args.batch_size)
 
 trainer = get_trainer(args, num_classes)
 
-trainer.train(train_loader, args.epochs)
+trainer.train(cal_loader, args.epochs)
 
 trainer.predictor.calibrate(cal_loader)
 result_dict = trainer.predictor.evaluate(test_loader)
