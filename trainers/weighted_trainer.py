@@ -18,6 +18,9 @@ class WeightedTrainer:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.first_net = models.utils.build_model(args.model, (args.pretrained == "True"), num_classes=num_classes, device=self.device)
         self.final_net = nn.Linear(2048, num_classes, device=self.device)
+        if args.load == "True":
+            self.first_net.load_state_dict(torch.load(f"./data/{args.dataset}_{args.model}{0}first_net.pth"))
+            self.final_net.load_state_dict(torch.load(f"./data/{args.dataset}_{args.model}{0}final_net.pth"))
         self.net = nn.Sequential(self.first_net, self.final_net)
         block = nn.Sequential(nn.Linear(2048, 256), nn.ReLU(), nn.Linear(256, 3)).to(self.device)
         self.block = block
@@ -73,22 +76,23 @@ class WeightedTrainer:
 
     def train(self, data_loader, epochs):
         self.net.train()
-        if self.adapter is None:
-            for epoch in range(epochs):
-                self.train_epoch_without_adapter(data_loader)
-        else:
-            for epoch in range(epochs):
-                self.train_epoch_with_adapter(data_loader)
-        i = 0
-        while(True):
-            first_net_path = f"./data/{self.args.model}{i}first_net.pth"
-            final_net_path = f"./data/{self.args.model}{i}final_net.pth"
-            if os.path.exists(first_net_path) or os.path.exists(final_net_path):
-                i += 1
-                continue
-            torch.save(self.first_net.state_dict(), f"./data/{self.args.model}{i}first_net.pth")
-            torch.save(self.final_net.state_dict(), f"./data/{self.args.model}{i}final_net.pth")
-            break
+        if self.args.load == "False":
+            if self.adapter is None:
+                for epoch in range(epochs):
+                    self.train_epoch_without_adapter(data_loader)
+            else:
+                for epoch in range(epochs):
+                    self.train_epoch_with_adapter(data_loader)
+            i = 0
+            while(True):
+                first_net_path = f"./data/{self.args.dataset}_{self.args.model}{i}first_net.pth"
+                final_net_path = f"./data/{self.args.dataset}_{self.args.model}{i}final_net.pth"
+                if os.path.exists(first_net_path) or os.path.exists(final_net_path):
+                    i += 1
+                    continue
+                torch.save(self.first_net.state_dict(), f"./data/{self.args.model}{i}first_net.pth")
+                torch.save(self.final_net.state_dict(), f"./data/{self.args.model}{i}final_net.pth")
+                break
 
         for param in self.first_net.parameters():
             param.requires_grad = False

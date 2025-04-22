@@ -14,6 +14,7 @@ parser.add_argument("--pretrained", default="False", type=str, choices=["True", 
 parser.add_argument("--save", default="False", choices=["True", "False"], type=str)
 parser.add_argument("--algorithm",'-alg', default="standard", choices=["standard", "uatr"],
                     help="Uncertainty aware training use uatr. Otherwise use standard")
+parser.add_argument("--load", default="False", type=str, choices=["True", "False"])
 
 #  Training configuration
 parser.add_argument("--optimizer", type=str, default="sgd", choices=["sgd", "adam"], help="Choose optimizer.")
@@ -83,7 +84,7 @@ for score in ["thr", "raps", "saps"]:
     args.score = score
     args.saps_size_penalty_weight = 1
     args.raps_size_penalty_weight = 1
-    args.raps_size_regularization = 10
+    args.raps_size_regularization = 1
     trainer.predictor = predictor.Predictor(args, trainer.net, adapter_net=None)
     trainer.predictor.calibrate(cal_loader)
     sub_result_dict = trainer.predictor.evaluate(test_loader)
