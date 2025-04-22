@@ -98,7 +98,7 @@ class NewWeightedTrainer:
                 torch.save(self.final_net.state_dict(), final_net_path)
                 break
 
-        for param in self.first_net.parameters():
+        for param in self.net.parameters():
             param.requires_grad = False
 
         for i in range(10):
