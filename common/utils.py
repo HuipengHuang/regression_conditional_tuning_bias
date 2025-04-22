@@ -3,6 +3,7 @@ import datetime
 import torch
 import numpy as np
 import random
+import torchvision
 from torchvision.transforms import transforms
 from torch.utils.data import DataLoader, Subset, random_split
 import os
@@ -31,11 +32,32 @@ def build_dataset(args):
                                  transform=transforms.Compose([transforms.ToTensor()]))
 
     elif dataset_name == "imagenet":
-        from torchvision.datasets import ImageNet
         num_class = 1000
-        train_dataset = ImageNet(root='/data/dataset', train=True, download=False, transform=transforms.Compose([transforms.ToTensor()]))
-        cal_test_dataset = ImageNet(root='/data/dataset', train=False, download=False,
-                                 transform=transforms.Compose([transforms.ToTensor()]))
+        train_transform = transforms.Compose([
+            transforms.RandomResizedCrop(224),
+            transforms.RandomHorizontalFlip(),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ])
+
+        val_transform = transforms.Compose([
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ])
+
+        # Load datasets
+        train_dataset = torchvision.datasets.ImageFolder(
+            root="/data/dataset/imagenet/images/train",
+            transform=train_transform
+        )
+
+        cal_test_dataset = torchvision.datasets.ImageFolder(
+            root="/data/dataset/imagenet/images/val",
+            transform=val_transform
+        )
+
 
     cal_size = int(len(cal_test_dataset) * args.cal_ratio)
     test_size = len(cal_test_dataset) - cal_size
