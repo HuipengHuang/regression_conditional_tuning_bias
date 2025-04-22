@@ -6,6 +6,7 @@ from predictors import predictor
 
 parser = argparse.ArgumentParser()
 
+parser.add_argument("--new", type=str, default=None)
 parser.add_argument("--model", type=str, default="resnet50", help='Choose neural network architecture.')
 parser.add_argument("--dataset", type=str, default="cifar100", choices=["cifar10", "cifar100", "imagenet"],
                     help="Choose dataset for training.")
