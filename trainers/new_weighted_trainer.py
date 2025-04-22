@@ -29,10 +29,10 @@ class NewWeightedTrainer:
         self.batch_size = args.batch_size
         if args.optimizer == 'sgd':
             self.optimizer = torch.optim.SGD(self.net.parameters(), lr=args.learning_rate, momentum=args.momentum, weight_decay=args.weight_decay)
-            self.weighted_optimizer = torch.optim.SGD(self.weight.parameters(), lr=args.learning_rate, momentum=args.momentum,)
+            self.weighted_optimizer = torch.optim.SGD(self.weight, lr=args.learning_rate, momentum=args.momentum,)
         if args.optimizer == 'adam':
             self.optimizer = torch.optim.Adam(self.net.parameters(), lr=args.learning_rate,weight_decay=args.weight_decay)
-            self.weighted_optimizer = torch.optim.Adam(self.weight.parameters(), lr=args.learning_rate,
+            self.weighted_optimizer = torch.optim.Adam(self.weight, lr=args.learning_rate,
                                               weight_decay=args.weight_decay)
         if args.adapter == "True":
             self.adapter = Adapter(num_classes, self.device)
@@ -101,12 +101,12 @@ class NewWeightedTrainer:
         for param in self.first_net.parameters():
             param.requires_grad = False
 
-        for i in range(100):
+        for i in range(10):
             for data, target in tqdm(data_loader, desc=f"{i}: {10}"):
                 data = data.to(self.device)
                 target = target.to(self.device)
 
-                weights = torch.softmax(self.weights, dim=-1)
+                weights = torch.softmax(self.weight, dim=-1)
                 weights = torch.stack([weights for i in range(data.shape[0])], dim=0)
 
                 logits = self.net(data)
