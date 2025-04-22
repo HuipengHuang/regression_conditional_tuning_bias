@@ -24,7 +24,7 @@ class WeightedTrainer:
             #self.first_net.load_state_dict(torch.load(f"./data/{args.dataset}_{args.model}{0}first_net.pth"))
             #self.final_net.load_state_dict(torch.load(f"./data/{args.dataset}_{args.model}{0}final_net.pth"))
         self.net = nn.Sequential(self.first_net, self.final_net)
-        block = nn.Sequential(nn.Linear(2048, 256), nn.ReLU(), nn.Linear(256, 3)).to(self.device)
+        block = nn.Sequential(nn.Linear(2048, 512), nn.Sigmoid(), nn.Linear(512, 3)).to(self.device)
         self.block = block
         self.weight_net = nn.Sequential(self.first_net, block)
         self.batch_size = args.batch_size
@@ -102,7 +102,7 @@ class WeightedTrainer:
         for param in self.first_net.parameters():
             param.requires_grad = False
 
-        for i in range(0):
+        for i in range(10):
             for data, target in tqdm(data_loader, desc=f"{i}: {10}"):
                 data = data.to(self.device)
                 target = target.to(self.device)
