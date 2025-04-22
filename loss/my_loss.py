@@ -9,7 +9,7 @@ class MyLoss():
         self.predictor = predictor
         self.batch_size = args.batch_size
         if args.temperature is None:
-            self.T = 1
+            self.T = 1e-4
         else:
             self.T = args.temperature
 
@@ -49,3 +49,19 @@ class MyLoss():
         size_loss = torch.maximum(torch.sum(smooth_pred,dim=-1) - self.tau, torch.tensor([0], device=smooth_pred.device)).mean()
         return size_loss
 
+class MyAdapterLoss():
+    def __init__(self, args, predictor):
+        super().__init__()
+        self.predictor = predictor
+        if args.temperature is None:
+            self.T = 1e-5
+        else:
+            self.T = args.temperature
+
+    def forward(self, weight, logits, target):
+        prob = torch.softmax(logits, dim=-1)
+        score = self.predictor.score_function(weight, prob)
+        target_score = torch.gather(score, dim=1, index=target.unsqueeze(1))
+
+        loss = torch.sigmoid((target_score.unsqueeze(0) - score) / self.T).mean()
+        return loss
