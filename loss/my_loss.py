@@ -60,7 +60,7 @@ class MyAdapterLoss():
 
     def forward(self, weight, logits, target):
         prob = torch.softmax(logits, dim=-1)
-        print(prob)
+        print(weight)
         score = self.predictor.score_function(weight, prob)
         target_score = torch.gather(score, dim=1, index=target.unsqueeze(1))
 
