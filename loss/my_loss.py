@@ -9,7 +9,7 @@ class MyLoss():
         self.predictor = predictor
         self.batch_size = args.batch_size
         if args.temperature is None:
-            self.T = 10
+            self.T = 1e-1
         else:
             self.T = args.temperature
 
@@ -39,7 +39,7 @@ class MyLoss():
         pred_score = self.predictor.score_function(pred_weight, pred_prob)
 
         smooth_pred = torch.sigmoid((threshold - pred_score) / self.T)
-
+        print(smooth_pred)
         size_loss = self.compute_size_loss(smooth_pred)
 
         loss = torch.log(size_loss + 1e-8)
