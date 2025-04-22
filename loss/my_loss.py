@@ -63,8 +63,5 @@ class MyAdapterLoss():
         score = self.predictor.score_function(weight, prob)
         target_score = torch.gather(score, dim=1, index=target.unsqueeze(1))
         loss = torch.sigmoid((target_score.unsqueeze(0) - score) / self.T)
-        print("---")
-        print(target_score)
-        print(score)
         loss = loss.mean()
         return loss
