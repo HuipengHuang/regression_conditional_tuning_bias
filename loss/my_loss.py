@@ -62,6 +62,7 @@ class MyAdapterLoss():
         prob = torch.softmax(logits, dim=-1)
         score = self.predictor.score_function(weight, prob)
         target_score = torch.gather(score, dim=1, index=target.unsqueeze(1))
-        print(target_score)
-        loss = torch.sigmoid((target_score.unsqueeze(0) - score) / self.T).mean()
+        loss = torch.sigmoid((target_score.unsqueeze(0) - score) / self.T)
+        print(loss)
+        loss = loss.mean()
         return loss
