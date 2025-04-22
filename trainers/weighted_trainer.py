@@ -56,7 +56,7 @@ class WeightedTrainer:
         data = data.to(self.device)
         target = target.to(self.device)
         logits = self.net(data)
-        loss = nn.CrossEntropyLoss(logits, target)
+        loss = nn.CrossEntropyLoss()(logits, target)
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
