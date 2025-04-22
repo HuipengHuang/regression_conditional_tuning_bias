@@ -69,6 +69,8 @@ class New_Weighted_Predictor:
                 prob = torch.softmax(logit, dim=-1)
                 weight = self.weight
                 weight = torch.softmax(weight, dim=-1)
+                weight = torch.stack([weight for i in range(data.shape[0])], dim=0)
+
                 prediction = torch.argmax(prob, dim=-1)
                 total_accuracy += (prediction == target).sum().item()
 
