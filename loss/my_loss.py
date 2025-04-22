@@ -43,7 +43,7 @@ class MyLoss():
         size_loss = self.compute_size_loss(smooth_pred)
 
         loss = torch.log(size_loss + 1e-8)
-        print(loss)
+        print(size_loss)
         return loss
 
     def compute_size_loss(self, smooth_pred) -> torch.Tensor:
