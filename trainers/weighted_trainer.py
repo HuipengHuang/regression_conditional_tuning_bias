@@ -19,10 +19,12 @@ class WeightedTrainer:
         self.first_net = models.utils.build_model(args.model, (args.pretrained == "True"), num_classes=num_classes, device=self.device)
         self.final_net = nn.Linear(2048, num_classes, device=self.device)
         if args.load == "True":
-            self.first_net.load_state_dict(torch.load(f"./data/{args.model}{0}first_net.pth"))
-            self.final_net.load_state_dict(torch.load(f"./data/{args.model}{0}final_net.pth"))
-            #self.first_net.load_state_dict(torch.load(f"./data/{args.dataset}_{args.model}{0}first_net.pth"))
-            #self.final_net.load_state_dict(torch.load(f"./data/{args.dataset}_{args.model}{0}final_net.pth"))
+            if args.dataset == "cifar10":
+                self.first_net.load_state_dict(torch.load(f"./data/{args.model}{0}first_net.pth"))
+                self.final_net.load_state_dict(torch.load(f"./data/{args.model}{0}final_net.pth"))
+            else:
+                self.first_net.load_state_dict(torch.load(f"./data/{args.dataset}_{args.model}{0}first_net.pth"))
+                self.final_net.load_state_dict(torch.load(f"./data/{args.dataset}_{args.model}{0}final_net.pth"))
         self.net = nn.Sequential(self.first_net, self.final_net)
         block = nn.Sequential(nn.Linear(2048, 512), nn.Sigmoid(), nn.Linear(512, 3)).to(self.device)
         self.block = block
