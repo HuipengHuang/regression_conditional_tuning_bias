@@ -103,6 +103,7 @@ class WeightedTrainer:
             param.requires_grad = False
 
         for i in range(10):
+            avg_loss = 0
             for data, target in tqdm(data_loader, desc=f"{i}: {10}"):
                 data = data.to(self.device)
                 target = target.to(self.device)
@@ -111,9 +112,12 @@ class WeightedTrainer:
                 weights = torch.softmax(weights, dim=-1)
                 logits = self.net(data)
                 loss = self.weight_loss_function.forward(weights, logits, target)
+                avg_loss += loss.item()
                 self.weighted_optimizer.zero_grad()
                 loss.backward()
                 self.weighted_optimizer.step()
+            avg_loss /= len(data_loader)
+            print(f"Epoch {i} loss: {avg_loss}")
 
     def set_train_mode(self, train_adapter, train_net):
         assert self.adapter is not None, print("The trainer does not have an adapter.")
