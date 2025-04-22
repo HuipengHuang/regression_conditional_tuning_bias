@@ -53,7 +53,7 @@ class MyAdapterLoss():
         super().__init__()
         self.predictor = predictor
         if args.temperature is None:
-            self.T = 1e-1
+            self.T = 1e-4
         else:
             self.T = args.temperature
 
@@ -61,5 +61,6 @@ class MyAdapterLoss():
         prob = torch.softmax(logits, dim=-1)
         score = self.predictor.score_function(weight, prob)
         target_score = torch.gather(score, dim=1, index=target.unsqueeze(1))
+        print((target_score.unsqueeze(0) - score) / self.T)
         loss = torch.sigmoid((target_score.unsqueeze(0) - score) / self.T).mean()
         return loss
