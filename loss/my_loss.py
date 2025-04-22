@@ -39,7 +39,6 @@ class MyLoss():
         pred_score = self.predictor.score_function(pred_weight, pred_prob)
 
         smooth_pred = torch.sigmoid((threshold - pred_score) / self.T)
-        print(smooth_pred)
         size_loss = self.compute_size_loss(smooth_pred)
 
         loss = torch.log(size_loss + 1e-8)
