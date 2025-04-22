@@ -102,6 +102,7 @@ class NewWeightedTrainer:
             param.requires_grad = False
 
         for i in range(10):
+            avg_loss = 0
             for data, target in tqdm(data_loader, desc=f"{i}: {10}"):
                 data = data.to(self.device)
                 target = target.to(self.device)
@@ -114,7 +115,8 @@ class NewWeightedTrainer:
                 self.weighted_optimizer.zero_grad()
                 loss.backward()
                 self.weighted_optimizer.step()
-
+                avg_loss += loss.item()
+            print(f"{i}: {avg_loss / len(data_loader)}")
     def set_train_mode(self, train_adapter, train_net):
         assert self.adapter is not None, print("The trainer does not have an adapter.")
         for param in self.adapter.adapter_net.parameters():
