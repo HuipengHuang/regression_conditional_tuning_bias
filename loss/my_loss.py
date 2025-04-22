@@ -9,7 +9,7 @@ class MyLoss():
         self.predictor = predictor
         self.batch_size = args.batch_size
         if args.temperature is None:
-            self.T = 1e-4
+            self.T = 1e-1
         else:
             self.T = args.temperature
 
@@ -54,7 +54,7 @@ class MyAdapterLoss():
         super().__init__()
         self.predictor = predictor
         if args.temperature is None:
-            self.T = 1e-4
+            self.T = 1e-1
         else:
             self.T = args.temperature
 
