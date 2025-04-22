@@ -54,7 +54,7 @@ class MyAdapterLoss():
         super().__init__()
         self.predictor = predictor
         if args.temperature is None:
-            self.T = 1e-5
+            self.T = 1e-4
         else:
             self.T = args.temperature
 

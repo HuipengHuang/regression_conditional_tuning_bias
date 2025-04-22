@@ -93,8 +93,8 @@ class WeightedTrainer:
                 if os.path.exists(first_net_path) or os.path.exists(final_net_path):
                     i += 1
                     continue
-                torch.save(self.first_net.state_dict(), f"./data/{self.args.model}{i}first_net.pth")
-                torch.save(self.final_net.state_dict(), f"./data/{self.args.model}{i}final_net.pth")
+                torch.save(self.first_net.state_dict(), first_net_path)
+                torch.save(self.final_net.state_dict(), final_net_path)
                 break
 
         for param in self.first_net.parameters():
