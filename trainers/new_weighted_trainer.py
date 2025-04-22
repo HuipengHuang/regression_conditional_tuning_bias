@@ -29,10 +29,10 @@ class NewWeightedTrainer:
         self.batch_size = args.batch_size
         if args.optimizer == 'sgd':
             self.optimizer = torch.optim.SGD(self.net.parameters(), lr=args.learning_rate, momentum=args.momentum, weight_decay=args.weight_decay)
-            self.weighted_optimizer = torch.optim.SGD(self.weight, lr=args.learning_rate, momentum=args.momentum,)
+            self.weighted_optimizer = torch.optim.SGD([self.weight], lr=args.learning_rate, momentum=args.momentum,)
         if args.optimizer == 'adam':
             self.optimizer = torch.optim.Adam(self.net.parameters(), lr=args.learning_rate,weight_decay=args.weight_decay)
-            self.weighted_optimizer = torch.optim.Adam(self.weight, lr=args.learning_rate,
+            self.weighted_optimizer = torch.optim.Adam([self.weight], lr=args.learning_rate,
                                               weight_decay=args.weight_decay)
         if args.adapter == "True":
             self.adapter = Adapter(num_classes, self.device)
