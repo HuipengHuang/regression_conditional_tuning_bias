@@ -45,7 +45,7 @@ class MyLoss():
         return loss
 
     def compute_size_loss(self, smooth_pred) -> torch.Tensor:
-        size_loss = torch.maximum(torch.sum(smooth_pred,dim=-1) - self.tau, torch.tensor([0], device=smooth_pred.device)).mean()
+        size_loss = torch.maximum(torch.sum(smooth_pred, dim=-1) - self.tau, torch.tensor([0], device=smooth_pred.device)).mean()
         return size_loss
 
 class MyAdapterLoss():
@@ -61,7 +61,5 @@ class MyAdapterLoss():
         prob = torch.softmax(logits, dim=-1)
         score = self.predictor.score_function(weight, prob)
         target_score = torch.gather(score, dim=1, index=target.unsqueeze(1))
-        loss = torch.sigmoid((target_score.unsqueeze(0) - score) / self.T)
-        print(loss)
-        loss =loss.mean()
+        loss = torch.sigmoid((target_score.unsqueeze(0) - score) / self.T).mean()
         return loss
