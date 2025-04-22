@@ -33,7 +33,7 @@ class New_Weighted_Predictor:
                 logits = self.combined_net(data)
                 prob = torch.softmax(logits, dim=1)
 
-                weight = torch.softmax(weight, dim=-1)
+                weight = torch.softmax(self.weight, dim=-1)
                 weight = torch.stack([weight for i in range(data.shape[0])], dim=0)
 
                 batch_score = self.score_function.compute_target_score(weight, prob, target)
