@@ -99,7 +99,7 @@ class MyHingeLoss():
 
         target_score = pred_score[torch.arange(pred_target.shape[-1]), pred_target]
         loss_obj = torch.sqrt(torch.relu(threshold - pred_score)).mean()
-        subject_loss = torch.mean(torch.relu(1 + threshold - target_score))
+        subject_loss = torch.mean(torch.relu(1 - threshold + target_score))
         loss = loss_obj + self._lambda * subject_loss
         return loss
 
