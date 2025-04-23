@@ -35,7 +35,12 @@ class WeightedTrainer:
             self.weighted_optimizer = torch.optim.SGD(block.parameters(), lr=args.learning_rate, momentum=args.momentum,)
         if args.optimizer == 'adam':
             self.optimizer = torch.optim.Adam(self.net.parameters(), lr=args.learning_rate,weight_decay=args.weight_decay)
-            self.weighted_optimizer = torch.optim.Adam(block.parameters(), lr=args.learning_rate,
+            if args.loss == "hinge":
+                _lambda = nn.Parameter(torch.tensor([1], device=self.device))
+                self.weighted_optimizer = torch.optim.Adam([block.parameters(), _lambda], lr=args.learning_rate,
+                                                           weight_decay=args.weight_decay)
+            else:
+                self.weighted_optimizer = torch.optim.Adam(block.parameters(), lr=args.learning_rate,
                                               weight_decay=args.weight_decay)
         if args.adapter == "True":
             self.adapter = Adapter(num_classes, self.device)
@@ -47,8 +52,11 @@ class WeightedTrainer:
 
         self.num_classes = num_classes
         self.loss_function = get_loss_function(args, self.predictor)
+
         if args.loss == "cadapter":
             self.weight_loss_function = my_loss.MyAdapterLoss(args, self.predictor)
+        elif args.loss == "hinge":
+            self.weight_loss_function = my_loss.MyHingeLoss(args, self.predictor, _lambda)
         else:
             self.weight_loss_function = my_loss.MyLoss(args, self.predictor)
         self.args = args

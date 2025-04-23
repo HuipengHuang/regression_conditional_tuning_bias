@@ -64,7 +64,8 @@ class MyAdapterLoss():
         return loss
 
 class MyHingeLoss():
-    def __init__(self, args, predictor):
+    def __init__(self, args, predictor, _lambda):
+        self._lambda = _lambda
         self.alpha = args.alpha
         self.predictor = predictor
         self.batch_size = args.batch_size
@@ -78,8 +79,10 @@ class MyHingeLoss():
             raise ValueError("Please specify a tau.")
         else:
             self.tau = args.tau
+        self._lambda = _lambda
 
-    def forward(self,  weight, logits, target, _lambda=None) -> torch.Tensor:
+
+    def forward(self,  weight, logits, target) -> torch.Tensor:
         shuffled_indices = torch.randperm(logits.size(0))
         shuffled_logit = logits[shuffled_indices]
         shuffled_target = target[shuffled_indices]
@@ -94,7 +97,10 @@ class MyHingeLoss():
         pred_prob = torch.softmax(pred_logit, dim=-1)
         pred_score = self.predictor.score_function(pred_weight, pred_prob)
 
-        hinge_loss = torch.sqrt(torch.relu(threshold - pred_score)) + _lambda
+        target_score = pred_score[torch.arange(pred_target.shape[-1]), pred_target]
+        loss_obj = torch.sqrt(torch.relu(threshold - pred_score)).mean()
+        subject_loss = torch.mean(torch.relu(1 + threshold - target_score))
+        loss = loss_obj + self._lambda * subject_loss
         return loss
 
     def compute_size_loss(self, smooth_pred) -> torch.Tensor:

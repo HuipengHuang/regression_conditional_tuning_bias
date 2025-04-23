@@ -24,7 +24,7 @@ parser.add_argument("--epochs", '-e', type=int, default=100, help='Number of epo
 parser.add_argument("--batch_size",'-bsz', type=int, default=32)
 parser.add_argument("--momentum", type=float, default=0, help='Momentum')
 parser.add_argument("--weight_decay", type=float, default=0, help='Weight decay')
-parser.add_argument("--loss", type=str,default='standard', choices=['standard','conftr','ua',"cadapter"],
+parser.add_argument("--loss", type=str,default='standard', choices=['standard', 'conftr', 'ua', "cadapter", "hinge"],
                     help='Loss function you want to use. standard loss is Cross Entropy Loss.')
 
 #  Hyperpatameters for Conformal Prediction
@@ -75,7 +75,7 @@ trainer = get_trainer(args, num_classes)
 
 trainer.train(train_loader, args.epochs)
 
-trainer.predictor.calibrate(cal_loader, alpha=0.01)
+trainer.predictor.calibrate(cal_loader, alpha=args.alpha)
 result_dict = trainer.predictor.evaluate(test_loader)
 
 for key, value in result_dict.items():
@@ -87,7 +87,7 @@ for score in ["thr", "raps", "saps"]:
     args.raps_size_penalty_weight = 1
     args.raps_size_regularization = 0
     trainer.predictor = predictor.Predictor(args, trainer.net, adapter_net=None)
-    trainer.predictor.calibrate(cal_loader, alpha=0.01)
+    trainer.predictor.calibrate(cal_loader, alpha=args.alpha)
     sub_result_dict = trainer.predictor.evaluate(test_loader)
     print("-----")
     print(f"Score function: {score}")
