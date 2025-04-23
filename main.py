@@ -75,7 +75,7 @@ trainer = get_trainer(args, num_classes)
 
 trainer.train(train_loader, args.epochs)
 
-trainer.predictor.calibrate(cal_loader, alpha=0.1)
+trainer.predictor.calibrate(cal_loader, alpha=0.01)
 result_dict = trainer.predictor.evaluate(test_loader)
 
 for key, value in result_dict.items():
@@ -85,9 +85,9 @@ for score in ["thr", "raps", "saps"]:
     args.score = score
     args.saps_size_penalty_weight = 1
     args.raps_size_penalty_weight = 1
-    args.raps_size_regularization = 1
+    args.raps_size_regularization = 0
     trainer.predictor = predictor.Predictor(args, trainer.net, adapter_net=None)
-    trainer.predictor.calibrate(cal_loader, alpha=0.1)
+    trainer.predictor.calibrate(cal_loader, alpha=0.01)
     sub_result_dict = trainer.predictor.evaluate(test_loader)
     print("-----")
     print(f"Score function: {score}")

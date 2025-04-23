@@ -62,3 +62,41 @@ class MyAdapterLoss():
         target_score = torch.gather(score, dim=1, index=target.unsqueeze(1))
         loss = torch.sigmoid((target_score.unsqueeze(0) - score) / self.T).mean()
         return loss
+
+class MyHingeLoss():
+    def __init__(self, args, predictor):
+        self.alpha = args.alpha
+        self.predictor = predictor
+        self.batch_size = args.batch_size
+
+        if args.size_loss_weight is None:
+            raise ValueError("Please specify a size_loss_weight")
+        else:
+            self.size_loss_weight = args.size_loss_weight
+
+        if args.tau is None:
+            raise ValueError("Please specify a tau.")
+        else:
+            self.tau = args.tau
+
+    def forward(self,  weight, logits, target, _lambda=None) -> torch.Tensor:
+        shuffled_indices = torch.randperm(logits.size(0))
+        shuffled_logit = logits[shuffled_indices]
+        shuffled_target = target[shuffled_indices]
+        shuffled_weight = weight[shuffled_indices]
+
+        pred_size = int(shuffled_target.size(0) * 0.5)
+        pred_logit, cal_logit = shuffled_logit[:pred_size], shuffled_logit[pred_size:]
+        pred_target, cal_target = shuffled_target[:pred_size], shuffled_target[pred_size:]
+        pred_weight, cal_weight = shuffled_weight[:pred_size], shuffled_weight[pred_size:]
+
+        threshold = self.predictor.calibrate_batch_logit(cal_weight, cal_logit, cal_target, self.alpha)
+        pred_prob = torch.softmax(pred_logit, dim=-1)
+        pred_score = self.predictor.score_function(pred_weight, pred_prob)
+
+        hinge_loss = torch.sqrt(torch.relu(threshold - pred_score)) + _lambda
+        return loss
+
+    def compute_size_loss(self, smooth_pred) -> torch.Tensor:
+        size_loss = torch.maximum(torch.sum(smooth_pred, dim=-1) - self.tau, torch.tensor([0], device=smooth_pred.device)).mean()
+        return size_loss
