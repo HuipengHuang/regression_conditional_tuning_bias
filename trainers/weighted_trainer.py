@@ -36,7 +36,7 @@ class WeightedTrainer:
         if args.optimizer == 'adam':
             self.optimizer = torch.optim.Adam(self.net.parameters(), lr=args.learning_rate,weight_decay=args.weight_decay)
             if args.loss == "hinge":
-                _lambda = nn.Parameter(torch.tensor([1], device=self.device))
+                _lambda = nn.Parameter(torch.tensor([1.0], device=self.device))
                 self.weighted_optimizer = torch.optim.Adam([block.parameters(), _lambda], lr=args.learning_rate,
                                                            weight_decay=args.weight_decay)
             else:
