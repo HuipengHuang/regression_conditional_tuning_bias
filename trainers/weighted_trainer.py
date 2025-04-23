@@ -118,8 +118,11 @@ class WeightedTrainer:
 
         for param in self.first_net.parameters():
             param.requires_grad = False
-
-        for i in range(100):
+        if self.args.dataset == "imagenet":
+            epoch = 10
+        else:
+            epoch = 100
+        for i in range(epoch):
             avg_loss = 0
             for data, target in tqdm(data_loader, desc=f"{i}: {10}"):
                 data = data.to(self.device)
