@@ -119,7 +119,7 @@ class WeightedTrainer:
         for param in self.first_net.parameters():
             param.requires_grad = False
         if self.args.dataset == "imagenet":
-            epoch = 5
+            epoch = 2
         else:
             epoch = 100
         for i in range(epoch):
