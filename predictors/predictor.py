@@ -46,7 +46,6 @@ class Predictor:
         return torch.quantile(batch_score, math.ceil((1 - alpha) * (N + 1)) / N, dim=0)
 
     def evaluate(self, test_loader):
-        print(self.threshold)
         """Must be called after calibration.
         Output a dictionary containing Top1 Accuracy, Coverage and Average Prediction Set Size."""
         if self.threshold is None:
@@ -73,6 +72,7 @@ class Predictor:
             accuracy = total_accuracy / len(test_loader.dataset)
             coverage = total_coverage / len(test_loader.dataset)
             avg_set_size = total_prediction_set_size / len(test_loader.dataset)
+            print(total_prediction_set_size, len(test_loader.dataset), avg_set_size)
             result_dict = {f"{self.args.score}_Top1Accuracy": accuracy,
                            f"{self.args.score}_AverageSetSize": avg_set_size,
                            f"{self.args.score}_Coverage": coverage}
