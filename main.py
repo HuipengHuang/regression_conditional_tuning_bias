@@ -77,7 +77,7 @@ trainer.train(train_loader, args.epochs)
 
 if args.loss == "conftr":
     trainer.loss_function.plot_threshold_list()
-
+trainer.predictor = predictor.Predictor(args, trainer.net)
 trainer.predictor.calibrate(cal_loader, alpha=args.alpha)
 result_dict = trainer.predictor.evaluate(test_loader)
 
