@@ -81,7 +81,7 @@ result_dict = trainer.predictor.evaluate(test_loader)
 for key, value in result_dict.items():
     print(f'{key}: {value}')
 
-for score in ["thr", "raps", "saps", "aps"]:
+for score in ["aps"]:
     args.score = score
     args.saps_size_penalty_weight = 1
     args.raps_size_penalty_weight = 1

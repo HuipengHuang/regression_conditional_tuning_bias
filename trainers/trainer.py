@@ -66,13 +66,14 @@ class Trainer:
 
     def train(self, data_loader, epochs):
         self.net.train()
-        if self.adapter is None:
-            for epoch in range(epochs):
-                self.train_epoch_without_adapter(data_loader)
-        else:
-            for epoch in range(epochs):
-                self.train_epoch_with_adapter(data_loader)
         if self.args.load == "False":
+            if self.adapter is None:
+                for epoch in range(epochs):
+                    self.train_epoch_without_adapter(data_loader)
+            else:
+                for epoch in range(epochs):
+                    self.train_epoch_with_adapter(data_loader)
+
             i = 0
             while (True):
                 net_path = f"./data/{self.args.dataset}_{self.args.model}{i}net.pth"
@@ -81,6 +82,7 @@ class Trainer:
                     continue
                 torch.save(self.net.state_dict(), net_path)
                 break
+
 
     def set_train_mode(self, train_adapter, train_net):
         assert self.adapter is not None, print("The trainer does not have an adapter.")
