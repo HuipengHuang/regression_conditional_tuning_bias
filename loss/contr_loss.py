@@ -10,6 +10,7 @@ class ConftrLoss(BaseLoss):
         self.alpha = args.alpha
         self.predictor = predictor
         self.batch_size = args.batch_size
+        self.args = args
         if args.temperature is None:
             self.T = 1e-4
         else:
@@ -67,7 +68,7 @@ class ConftrLoss(BaseLoss):
         plt.plot(self.threshold_list)
         i = 0
         while True:
-            p = os.path.join("./experiment", "image", f"threshold_list_{i}.png")
+            p = os.path.join("./experiment", "image", f"{self.args.dataset}_threshold_list_{i}.png")
             if os.path.isfile(p):
                 i += 1
                 continue
