@@ -20,6 +20,7 @@ class Predictor:
     def calibrate(self, cal_loader, alpha=None):
         """ Input calibration dataloader.
             Compute scores for all the calibration data and take the (1 - alpha) quantile."""
+        self.combined_net.eval()
         with torch.no_grad():
             if alpha is None:
                 alpha = self.alpha
