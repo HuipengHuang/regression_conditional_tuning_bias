@@ -1,8 +1,7 @@
 from .base_loss import BaseLoss
 import torch
 import torch.nn.functional as F
-import torch.nn as nn
-
+import matplotlib.pylab as plt
 class ConftrLoss(BaseLoss):
     def __init__(self, args, predictor):
         super().__init__()
@@ -23,6 +22,8 @@ class ConftrLoss(BaseLoss):
             raise ValueError("Please specify a tau.")
         else:
             self.tau = args.tau
+        self.threshold_list = []
+
 
     def forward(self, logits, target) -> torch.Tensor:
         shuffled_indices = torch.randperm(logits.size(0))
@@ -34,6 +35,7 @@ class ConftrLoss(BaseLoss):
         pred_target, cal_target = shuffled_target[:pred_size], shuffled_target[pred_size:]
 
         threshold = self.predictor.calibrate_batch_logit(cal_logit, cal_target, self.alpha)
+        self.threshold_list.append(threshold)
         pred_prob = torch.softmax(pred_logit, dim=-1)
         pred_score = self.predictor.score_function(pred_prob)
 
@@ -58,3 +60,7 @@ class ConftrLoss(BaseLoss):
 
         loss = torch.sum(torch.maximum(l1 + l2, torch.zeros_like(l1)), dim=1)
         return torch.mean(loss)
+
+    def plot_threshold_list(self):
+        plt.plot(self.threshold_list)
+        plt.savefig('experiment/image/threshold_list.png')

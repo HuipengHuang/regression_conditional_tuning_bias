@@ -13,6 +13,7 @@ class Trainer:
     Trainer class that implement all the functions regarding training.
     All the arguments are passed through args."""
     def __init__(self, args, num_classes):
+        self.args = args
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.net = models.utils.build_model(args.model, (args.pretrained == "True"), num_classes=num_classes, device=self.device)
         if args.load == "True":
@@ -33,7 +34,6 @@ class Trainer:
 
         self.num_classes = num_classes
         self.loss_function = get_loss_function(args, self.predictor)
-        self.args = args
 
     def train_batch_without_adapter(self, data, target):
         #  split train_batch into train_batch_with_adapter and train_batch_without_adapter
