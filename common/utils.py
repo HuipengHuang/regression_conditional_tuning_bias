@@ -28,7 +28,7 @@ def build_dataset(args):
         from torchvision.datasets import CIFAR100
         num_class = 100
         train_dataset = CIFAR100(root="/data/dataset", download=False, train=True,transform=transforms.Compose([transforms.ToTensor()]))
-        cal_test_dataset = CIFAR100(root='/data/dataset', download=False,
+        cal_test_dataset = CIFAR100(root='/data/dataset', download=False, train=False,
                                  transform=transforms.Compose([transforms.ToTensor()]))
 
     elif dataset_name == "imagenet":
