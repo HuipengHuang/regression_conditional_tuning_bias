@@ -1,3 +1,5 @@
+import os
+
 import torch
 from tqdm import tqdm
 import models
@@ -13,6 +15,8 @@ class Trainer:
     def __init__(self, args, num_classes):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.net = models.utils.build_model(args.model, (args.pretrained == "True"), num_classes=num_classes, device=self.device)
+        if args.load == "True":
+            self.net.load_state_dict(torch.load(f"./data/{self.args.dataset}_{self.args.model}{0}net.pth"))
         self.batch_size = args.batch_size
         if args.optimizer == 'sgd':
             self.optimizer = torch.optim.SGD(self.net.parameters(), lr=args.learning_rate, momentum=args.momentum, weight_decay=args.weight_decay)
@@ -29,6 +33,7 @@ class Trainer:
 
         self.num_classes = num_classes
         self.loss_function = get_loss_function(args, self.predictor)
+        self.args = args
 
     def train_batch_without_adapter(self, data, target):
         #  split train_batch into train_batch_with_adapter and train_batch_without_adapter
@@ -67,6 +72,15 @@ class Trainer:
         else:
             for epoch in range(epochs):
                 self.train_epoch_with_adapter(data_loader)
+        if self.args.load == "False":
+            i = 0
+            while (True):
+                net_path = f"./data/{self.args.dataset}_{self.args.model}{i}net.pth"
+                if os.path.exists(net_path):
+                    i += 1
+                    continue
+                torch.save(self.net.state_dict(), net_path)
+                break
 
     def set_train_mode(self, train_adapter, train_net):
         assert self.adapter is not None, print("The trainer does not have an adapter.")
