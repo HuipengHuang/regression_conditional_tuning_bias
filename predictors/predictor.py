@@ -11,7 +11,6 @@ class Predictor:
         if adapter_net:
             self.combined_net = nn.Sequential(net, adapter_net)
         else:
-            print("net is correct")
             self.combined_net = net
         self.threshold = None
         self.alpha = args.alpha
