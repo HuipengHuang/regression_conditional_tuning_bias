@@ -69,8 +69,6 @@ class Predictor:
 
                 total_coverage += prediction_set[torch.arange(target.shape[0]), target].sum().item()
                 total_prediction_set_size += prediction_set.sum().item()
-                if self.args.score == "aps" or self.args.score == "thr":
-                    print(prob.shape)
 
 
             accuracy = total_accuracy / len(test_loader.dataset)
