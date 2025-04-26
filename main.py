@@ -75,7 +75,7 @@ trainer = get_trainer(args, num_classes)
 
 trainer.train(train_loader, args.epochs)
 
-if args.loss == "conftr":
+if args.loss == "conftr" :
     trainer.loss_function.plot_threshold_list()
 
 trainer.predictor.calibrate(cal_loader)
@@ -94,6 +94,7 @@ for score in ["thr", "aps", "raps", "saps"]:
     sub_result_dict = trainer.predictor.evaluate(test_loader)
     print("-----")
     print(f"Score function: {score}")
+    print(f"threshold: {trainer.predictor.threshold}")
     for key, value in sub_result_dict.items():
         print(f'{key}: {value}')
         result_dict[key] = value

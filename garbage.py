@@ -1,4 +1,5 @@
 import torch
-
-x = torch.tensor([1,-1, 0, 2])
-print(torch.sqrt(torch.relu(x)))
+import torch.nn as nn
+prob = torch.tensor([0.33,0.33,0.33])
+loss = torch.sigmoid((prob - 0.7)).sum()
+print(loss)
