@@ -89,7 +89,7 @@ for score in ["thr", "aps", "raps", "saps"]:
     args.saps_size_penalty_weight = 1
     args.raps_size_penalty_weight = 1
     args.raps_size_regularization = 0
-
+    trainer.predictor = predictor.Predictor(args, trainer.net)
     trainer.predictor.calibrate(cal_loader)
     sub_result_dict = trainer.predictor.evaluate(test_loader)
     print("-----")
