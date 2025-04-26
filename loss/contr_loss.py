@@ -66,6 +66,8 @@ class ConftrLoss(BaseLoss):
         return torch.mean(loss)
 
     def plot_threshold_list(self):
+        if len(self.threshold_list) == 0:
+            return
         plt.plot(self.threshold_list)
         i = 0
         while True:
