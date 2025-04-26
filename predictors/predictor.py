@@ -23,6 +23,7 @@ class Predictor:
         with torch.no_grad():
             if alpha is None:
                 alpha = self.alpha
+            print("--",alpha)
             cal_score = torch.tensor([], device=self.device)
             for data, target in cal_loader:
                 data = data.to(self.device)
