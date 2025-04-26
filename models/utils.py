@@ -3,7 +3,9 @@ import torchvision.models as models
 
 
 def build_model(model_type, pretrained, num_classes, device, weight=None):
-    if model_type == "resnet34":
+    if model_type == 'resnet18':
+        model = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1 if pretrained else None)
+    elif model_type == "resnet34":
         net = models.resnet34(weights=models.ResNet34_Weights.IMAGENET1K_V1 if pretrained else None)
     elif model_type == "resnet50":
         net = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1 if pretrained else None)
