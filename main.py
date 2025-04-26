@@ -85,6 +85,7 @@ for key, value in result_dict.items():
     print(f'{key}: {value}')
 
 for score in ["thr", "aps", "raps", "saps"]:
+    args.alpha = 0.01
     args.score = score
     args.saps_size_penalty_weight = 1
     args.raps_size_penalty_weight = 1
