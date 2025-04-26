@@ -34,9 +34,9 @@ class Predictor:
 
                 cal_score = torch.cat((cal_score, batch_score), 0)
             N = cal_score.shape[0]
+            print(N)
             threshold = torch.quantile(cal_score, math.ceil((1 - alpha) * (N + 1)) / N, dim=0)
             self.threshold = threshold
-            print("---", threshold.item())
             return threshold
 
     def calibrate_batch_logit(self, logits, target, alpha):
