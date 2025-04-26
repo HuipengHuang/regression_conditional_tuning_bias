@@ -82,6 +82,13 @@ class Trainer:
                     continue
                 torch.save(self.net.state_dict(), net_path)
                 break
+        else:
+            if self.adapter is None:
+                for epoch in range(epochs):
+                    self.train_epoch_without_adapter(data_loader)
+            else:
+                for epoch in range(epochs):
+                    self.train_epoch_with_adapter(data_loader)
 
 
     def set_train_mode(self, train_adapter, train_net):

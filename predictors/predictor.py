@@ -74,7 +74,7 @@ class Predictor:
             accuracy = total_accuracy / len(test_loader.dataset)
             coverage = total_coverage / len(test_loader.dataset)
             avg_set_size = total_prediction_set_size / len(test_loader.dataset)
-            print(total_prediction_set_size, len(test_loader.dataset), avg_set_size)
+
             result_dict = {f"{self.args.score}_Top1Accuracy": accuracy,
                            f"{self.args.score}_AverageSetSize": avg_set_size,
                            f"{self.args.score}_Coverage": coverage}

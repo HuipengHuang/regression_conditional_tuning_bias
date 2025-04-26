@@ -9,7 +9,7 @@ class ConftrLoss(BaseLoss):
         self.predictor = predictor
         self.batch_size = args.batch_size
         if args.temperature is None:
-            self.T = 1
+            self.T = 1e-4
         else:
             self.T = args.temperature
 
