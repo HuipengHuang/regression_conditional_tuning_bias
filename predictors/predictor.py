@@ -66,10 +66,11 @@ class Predictor:
 
                 batch_score = self.score_function(prob)
                 prediction_set = (batch_score <= self.threshold).to(torch.int)
-                if self.args.score == "aps":
-                    print(prediction_set)
+
                 total_coverage += prediction_set[torch.arange(target.shape[0]), target].sum().item()
                 total_prediction_set_size += prediction_set.sum().item()
+                if self.args.score == "aps":
+                    print(total_prediction_set_size)
 
 
             accuracy = total_accuracy / len(test_loader.dataset)
