@@ -75,3 +75,4 @@ class ConftrLoss(BaseLoss):
                 continue
             else:
                 plt.savefig(p)
+                break
