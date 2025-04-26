@@ -46,6 +46,7 @@ class Predictor:
         return torch.quantile(batch_score, math.ceil((1 - alpha) * (N + 1)) / N, dim=0)
 
     def evaluate(self, test_loader):
+        print(self.threshold)
         """Must be called after calibration.
         Output a dictionary containing Top1 Accuracy, Coverage and Average Prediction Set Size."""
         if self.threshold is None:
