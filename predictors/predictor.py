@@ -30,7 +30,7 @@ class Predictor:
                 target = target.to(self.device)
 
                 logits = self.combined_net(data)
-                print(logits.shape)
+
                 prob = torch.softmax(logits, dim=1)
                 batch_score = self.score_function.compute_target_score(prob, target)
 
