@@ -1,3 +1,5 @@
+import os
+
 from .base_loss import BaseLoss
 import torch
 import torch.nn.functional as F
@@ -63,4 +65,11 @@ class ConftrLoss(BaseLoss):
 
     def plot_threshold_list(self):
         plt.plot(self.threshold_list)
-        plt.savefig('experiment/image/threshold_list.png')
+        i = 0
+        while True:
+            p = os.path(f"experiment/image/threshold_list_{i}.png")
+            if os.path.isfile(p):
+                i += 1
+                continue
+            else:
+                plt.savefig(p)
