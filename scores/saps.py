@@ -12,7 +12,7 @@ class SAPS(BaseScore):
 
     def __call__(self, prob):
         ordered_prob, indices = torch.sort(prob, descending=True)
-        max_prob = ordered_prob[:,0]
+        max_prob = ordered_prob[:, 0]
 
         if self.random:
             # Generate randomness.
