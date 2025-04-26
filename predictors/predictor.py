@@ -23,7 +23,6 @@ class Predictor:
         with torch.no_grad():
             if alpha is None:
                 alpha = self.alpha
-            print("--",alpha)
             cal_score = torch.tensor([], device=self.device)
             for data, target in cal_loader:
                 data = data.to(self.device)
@@ -37,6 +36,7 @@ class Predictor:
             N = cal_score.shape[0]
             threshold = torch.quantile(cal_score, math.ceil((1 - alpha) * (N + 1)) / N, dim=0)
             self.threshold = threshold
+            print(threshold + '--')
             return threshold
 
     def calibrate_batch_logit(self, logits, target, alpha):
