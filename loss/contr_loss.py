@@ -1,5 +1,5 @@
 import os
-
+import torch.nn as nn
 from .base_loss import BaseLoss
 import torch
 import torch.nn.functional as F
@@ -26,6 +26,7 @@ class ConftrLoss(BaseLoss):
         else:
             self.tau = args.tau
         self.threshold_list = []
+        self.ce_loss = nn.CrossEntropyLoss()
 
 
     def forward(self, logits, target) -> torch.Tensor:
@@ -47,7 +48,9 @@ class ConftrLoss(BaseLoss):
 
         size_loss = self.compute_size_loss(smooth_pred)
 
-        class_loss = self.compute_classification_loss(smooth_pred, pred_target)
+        #class_loss = self.compute_classification_loss(smooth_pred, pred_target)
+        class_loss = self.ce_loss(logits, target)
+
         loss = torch.log(class_loss + self.size_loss_weight * size_loss + 1e-8)
         return loss
 
