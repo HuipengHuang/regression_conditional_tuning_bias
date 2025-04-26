@@ -74,15 +74,17 @@ test_loader = DataLoader(test_dataset, batch_size=args.batch_size)
 trainer = get_trainer(args, num_classes)
 
 trainer.train(train_loader, args.epochs)
+
 if args.loss == "conftr":
     trainer.loss_function.plot_threshold_list()
+
 trainer.predictor.calibrate(cal_loader, alpha=args.alpha)
 result_dict = trainer.predictor.evaluate(test_loader)
 
 for key, value in result_dict.items():
     print(f'{key}: {value}')
 
-for score in ["thr"]:
+for score in ["thr", "thr"]:
     args.score = score
     args.saps_size_penalty_weight = 1
     args.raps_size_penalty_weight = 1
