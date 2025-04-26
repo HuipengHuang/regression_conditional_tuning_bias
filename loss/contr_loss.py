@@ -39,6 +39,7 @@ class ConftrLoss(BaseLoss):
 
         threshold = self.predictor.calibrate_batch_logit(cal_logit, cal_target, self.alpha)
         self.threshold_list.append(threshold.item())
+        print(type(threshold.item()))
         pred_prob = torch.softmax(pred_logit, dim=-1)
         pred_score = self.predictor.score_function(pred_prob)
 
