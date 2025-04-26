@@ -2,7 +2,7 @@ import torch
 import torchvision.models as models
 
 
-def build_model(model_type, pretrained, num_classes, device):
+def build_model(model_type, pretrained, num_classes, device, weight=None):
     if model_type == "resnet34":
         net = models.resnet34(weights=models.ResNet34_Weights.IMAGENET1K_V1 if pretrained else None)
     elif model_type == "resnet50":
@@ -18,12 +18,16 @@ def build_model(model_type, pretrained, num_classes, device):
     else:
         raise ValueError(f"Unsupported model type: {model_type}")
 
-    if hasattr(net, "fc"):
+    if hasattr(net, "fc") and weight == "True":
         #  ResNet and ResNeXt
         net.fc = torch.nn.Identity()
-    elif hasattr(net, "classifier"):
+    elif hasattr(net, "classifier") and weight == "True":
         #  DenseNet
         net.classifier = torch.nn.Identity()
+    elif hasattr(net, "fc"):
+        net.fc = torch.nn.Linear(net.fc.in_features, num_classes)
+    else:
+        net.classifier = torch.nn.Linear(net.classifier.in_features, num_classes)
 
     return net.to(device)
 
