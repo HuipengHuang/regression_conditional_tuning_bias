@@ -11,6 +11,8 @@ def build_model(model_type, pretrained, num_classes, device, weight=None):
         net = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1 if pretrained else None)
     elif model_type == "resnet101":
         net = models.resnet101(weights=models.ResNet101_Weights.IMAGENET1K_V1 if pretrained else None)
+    elif model_type == "resnet152":
+        net = models.resnet152(weights=models.ResNet152_Weights.IMAGENET1K_V1 if pretrained else None)
     elif model_type == "densenet121":
         net = models.densenet121(weights=models.DenseNet121_Weights.IMAGENET1K_V1 if pretrained else None)
     elif model_type == "densenet161":
