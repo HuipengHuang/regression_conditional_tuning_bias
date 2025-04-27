@@ -34,13 +34,16 @@ class ConftrLoss(BaseLoss):
         shuffled_logit = logits[shuffled_indices]
         shuffled_target = target[shuffled_indices]
 
-        pred_size = int(shuffled_target.size(0) * 0.5)
-        pred_logit, cal_logit = shuffled_logit[:pred_size], shuffled_logit[pred_size:]
-        pred_target, cal_target = shuffled_target[:pred_size], shuffled_target[pred_size:]
+        #pred_size = int(shuffled_target.size(0) * 0.5)
+        #pred_logit, cal_logit = shuffled_logit[:pred_size], shuffled_logit[pred_size:]
+        #pred_target, cal_target = shuffled_target[:pred_size], shuffled_target[pred_size:]
+        pred_logit, cal_logit = logits, logits
+        pred_target, cal_target = target, target
 
-        threshold = self.predictor.calibrate_batch_logit(cal_logit, cal_target, self.alpha)
+        #threshold = self.predictor.calibrate_batch_logit(cal_logit, cal_target, self.alpha)
         #self.threshold_list.append(threshold.item())
         threshold = torch.rand(1, device=self.predictor.device)
+
         pred_prob = torch.softmax(pred_logit, dim=-1)
         pred_score = self.predictor.score_function(pred_prob)
 
