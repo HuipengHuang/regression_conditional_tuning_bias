@@ -53,7 +53,8 @@ class ConftrLoss(BaseLoss):
 
         #class_loss = self.compute_classification_loss(smooth_pred, pred_target)
         class_loss = self.ce_loss(logits, target)
-        loss = torch.log(class_loss + self.size_loss_weight * size_loss + 1e-8)
+        #loss = torch.log(class_loss + self.size_loss_weight * size_loss + 1e-8)
+        loss = class_loss + self.size_loss_weight * size_loss
         return loss
 
     def compute_size_loss(self, smooth_pred) -> torch.Tensor:
