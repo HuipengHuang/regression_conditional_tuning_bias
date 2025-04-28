@@ -17,7 +17,7 @@ class WeightedTrainer:
     All the arguments are passed through args."""
     def __init__(self, args, num_classes):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.first_net = models.utils.build_model(args.model, (args.pretrained == "True"), num_classes=num_classes, device=self.device)
+        self.first_net = models.utils.build_model(args.model, (args.pretrained == "True"), num_classes=num_classes, device=self.device, args=args)
         if args.dataset == "imagenet":
             model = torchvision.models.resnet50(torchvision.models.ResNet50_Weights.IMAGENET1K_V1)
             self.final_net = model.fc.to(self.device)

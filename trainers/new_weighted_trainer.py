@@ -17,7 +17,7 @@ class NewWeightedTrainer:
     All the arguments are passed through args."""
     def __init__(self, args, num_classes):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.first_net = models.utils.build_model(args.model, (args.pretrained == "True"), num_classes=num_classes, device=self.device)
+        self.first_net = models.utils.build_model(args.model, (args.pretrained == "True"), num_classes=num_classes, device=self.device, args=args)
         self.final_net = nn.Linear(2048, num_classes, device=self.device)
         if args.load == "True":
             self.first_net.load_state_dict(torch.load(f"./data/{args.model}{0}first_net.pth"))

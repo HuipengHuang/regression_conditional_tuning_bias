@@ -2,7 +2,7 @@ import torch
 import torchvision.models as models
 
 
-def build_model(model_type, pretrained, num_classes, device, weight=None):
+def build_model(model_type, pretrained, num_classes, device, args):
     if model_type == 'resnet18':
         net = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1 if pretrained else None)
     elif model_type == "resnet34":
@@ -22,16 +22,18 @@ def build_model(model_type, pretrained, num_classes, device, weight=None):
     else:
         raise ValueError(f"Unsupported model type: {model_type}")
 
-    if hasattr(net, "fc") and weight == "True":
+    if hasattr(net, "fc") and args.weight == "True":
         #  ResNet and ResNeXt
         net.fc = torch.nn.Identity()
-    elif hasattr(net, "classifier") and weight == "True":
+    elif hasattr(net, "classifier") and args.weight == "True":
         #  DenseNet
         net.classifier = torch.nn.Identity()
     elif hasattr(net, "fc"):
         net.fc = torch.nn.Linear(net.fc.in_features, num_classes)
     else:
         net.classifier = torch.nn.Linear(net.classifier.in_features, num_classes)
-
+    if args.dataset == "cifar100":
+        net.conv1 = torch.nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+        net.maxpool = torch.nn.Identity()
     return net.to(device)
 
