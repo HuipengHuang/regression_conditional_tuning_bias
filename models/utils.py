@@ -22,10 +22,11 @@ def build_model(model_type, pretrained, num_classes, device, args):
     else:
         raise ValueError(f"Unsupported model type: {model_type}")
 
-    if hasattr(net, "fc") and args.weight == "True":
+    weight = (args.score == "weight_score")
+    if hasattr(net, "fc") and weight == "True":
         #  ResNet and ResNeXt
         net.fc = torch.nn.Identity()
-    elif hasattr(net, "classifier") and args.weight == "True":
+    elif hasattr(net, "classifier") and weight == "True":
         #  DenseNet
         net.classifier = torch.nn.Identity()
     elif hasattr(net, "fc"):
