@@ -60,7 +60,7 @@ class LocalizedPredictor:
 
 
     def calibrate_instance(self, data, target, alpha):
-        print(data.shape)
+        data = data.unsqueeze(dim=0)
         logits = self.combined_net(data)
         test_feature = self.combined_net.get_feature(data)
         self.get_weight(test_feature)
