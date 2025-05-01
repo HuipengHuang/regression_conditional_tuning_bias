@@ -60,6 +60,7 @@ class LocalizedPredictor:
 
 
     def calibrate_instance(self, data, target, alpha):
+        print(data.shape)
         logits = self.combined_net(data)
         test_feature = self.combined_net.get_feature(data)
         self.get_weight(test_feature)
@@ -123,7 +124,6 @@ class LocalizedPredictor:
 
             for data, target in test_loader:
                 data = data.to(self.device)
-                print(data.shape)
                 target = target.to(self.device)
                 for i in range(data.shape[0]):
                     prediction_set_size, coverage = self.calibrate_instance(data[i], target[i], alpha=self.alpha)
