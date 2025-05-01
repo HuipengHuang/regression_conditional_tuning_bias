@@ -16,6 +16,7 @@ parser.add_argument("--save", default="False", choices=["True", "False"], type=s
 parser.add_argument("--algorithm",'-alg', default="standard", choices=["standard", "uatr"],
                     help="Uncertainty aware training use uatr. Otherwise use standard")
 parser.add_argument("--load", default="False", type=str, choices=["True", "False"])
+parser.add_argument("--predictor", default=None, type=str, choices=["local"])
 
 #  Training configuration
 parser.add_argument("--optimizer", type=str, default="sgd", choices=["sgd", "adam"], help="Choose optimizer.")
@@ -84,7 +85,11 @@ result_dict = trainer.predictor.evaluate(test_loader)
 for key, value in result_dict.items():
     print(f'{key}: {value}')
 
-for score in ["thr", "aps", "raps", "saps"]:
+
+if args.save == "True":
+    save_exp_result(args, trainer, result_dict)
+
+"""for score in ["thr", "aps", "raps", "saps"]:
     args.score = score
     args.saps_size_penalty_weight = 1
     args.raps_size_penalty_weight = 1
@@ -97,7 +102,4 @@ for score in ["thr", "aps", "raps", "saps"]:
     print(f"threshold: {trainer.predictor.threshold}")
     for key, value in sub_result_dict.items():
         print(f'{key}: {value}')
-        result_dict[key] = value
-
-if args.save == "True":
-    save_exp_result(args, trainer, result_dict)
+        result_dict[key] = value"""

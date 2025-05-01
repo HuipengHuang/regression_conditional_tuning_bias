@@ -4,6 +4,7 @@ import torch
 from tqdm import tqdm
 import models
 from predictors import predictor
+from predictors import localized_predictor
 from loss.utils import get_loss_function
 from .adapter import Adapter
 
@@ -28,9 +29,12 @@ class Trainer:
             self.adapter = Adapter(num_classes, self.device)
             self.set_train_mode((args.train_adapter == "True"), (args.train_net == "True"))
             self.predictor = predictor.Predictor(args, self.net, self.adapter.adapter_net)
+        elif args.predictor == "local":
+            self.predictor = localized_predictor.LocalizedPredictor(args, self.net)
         else:
             self.adapter = None
             self.predictor = predictor.Predictor(args, self.net)
+
 
         self.num_classes = num_classes
         self.loss_function = get_loss_function(args, self.predictor)

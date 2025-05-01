@@ -1,6 +1,6 @@
 import torch
 import torchvision.models as models
-
+from resnet50 import ResNet50
 
 def build_model(model_type, pretrained, num_classes, device, args):
     if model_type == 'resnet18':
@@ -8,7 +8,7 @@ def build_model(model_type, pretrained, num_classes, device, args):
     elif model_type == "resnet34":
         net = models.resnet34(weights=models.ResNet34_Weights.IMAGENET1K_V1 if pretrained else None)
     elif model_type == "resnet50":
-        net = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1 if pretrained else None)
+        net = ResNet50(pretrained=pretrained is not None)
     elif model_type == "resnet101":
         net = models.resnet101(weights=models.ResNet101_Weights.IMAGENET1K_V1 if pretrained else None)
     elif model_type == "resnet152":
