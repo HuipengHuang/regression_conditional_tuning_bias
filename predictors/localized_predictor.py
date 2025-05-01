@@ -122,6 +122,8 @@ class LocalizedPredictor:
             total_set_size = 0
 
             for data, target in test_loader:
+                data = data.to(self.device)
+                target = target.to(self.device)
                 for i in range(data.shape[0]):
                     prediction_set_size, coverage = self.calibrate_instance(data[i], target[i], alpha=self.alpha)
                     total_set_size += prediction_set_size
