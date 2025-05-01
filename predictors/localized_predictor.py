@@ -72,6 +72,7 @@ class LocalizedPredictor:
 
         for i in range(1, n + 2):
             print(n, self.Q.shape, self.H.shape)
+            print(i, n)
             theta_p[i] = (self.Q[i, i - 1] + self.H[i, n+1]) / (self.Q[i, n] + self.H[i, n+1])
             theta[i] = self.Q[i, i - 1] / (self.Q[i, n] + self.H[i, n+1])
             theta_hat[i] = self.Q[n+1, i] / (torch.sum(self.H[n+1, ]))
