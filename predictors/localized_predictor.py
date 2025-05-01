@@ -102,10 +102,11 @@ class LocalizedPredictor:
 
         threshold = self.cal_score[optimal_k]
         prob = torch.softmax(logits, dim=-1)
+        acc = (torch.argmax(prob) == target).to(torch.int)
         score = self.score_function(prob)[0]
         prediction_set_size = torch.sum(score <= threshold).item()
         coverage = 1 if score[target] < threshold else 0
-        return prediction_set_size, coverage
+        return prediction_set_size, coverage, acc
 
 
     def calibrate(self, cal_loader, alpha=None):
@@ -126,9 +127,10 @@ class LocalizedPredictor:
                 data = data.to(self.device)
                 target = target.to(self.device)
                 for i in range(data.shape[0]):
-                    prediction_set_size, coverage = self.calibrate_instance(data[i], target[i], alpha=self.alpha)
+                    prediction_set_size, coverage, acc = self.calibrate_instance(data[i], target[i], alpha=self.alpha)
                     total_set_size += prediction_set_size
                     total_coverage += coverage
+                    total_accuracy += acc
 
             total_samples = len(test_loader.dataset)
             accuracy = total_accuracy / total_samples
