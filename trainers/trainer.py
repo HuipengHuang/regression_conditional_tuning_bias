@@ -34,6 +34,7 @@ class Trainer:
             self.set_train_mode((args.train_adapter == "True"), (args.train_net == "True"))
             self.predictor = predictor.Predictor(args, self.net, self.adapter.adapter_net)
         elif args.predictor == "local":
+            self.adapter = None
             self.predictor = localized_predictor.LocalizedPredictor(args, self.net)
         else:
             self.adapter = None
