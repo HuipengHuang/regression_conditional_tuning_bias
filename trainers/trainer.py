@@ -83,16 +83,17 @@ class Trainer:
                     self.train_epoch_with_adapter(data_loader)
 
             i = 0
-            while (True):
-                if self.args.predictor == "local":
-                    p = f"./data/local_{self.args.dataset}_{self.args.model}{0}net.pth"
-                else:
-                    p = f"./data/{self.args.dataset}_{self.args.model}{0}net.pth"
-                if os.path.exists(p):
-                    i += 1
-                    continue
-                torch.save(self.net.state_dict(), p)
-                break
+            if self.args.save_model == "True":
+                while (True):
+                    if self.args.predictor == "local":
+                        p = f"./data/local_{self.args.dataset}_{self.args.model}{0}net.pth"
+                    else:
+                        p = f"./data/{self.args.dataset}_{self.args.model}{0}net.pth"
+                    if os.path.exists(p):
+                        i += 1
+                        continue
+                    torch.save(self.net.state_dict(), p)
+                    break
         else:
             if self.adapter is None:
                 for epoch in range(epochs):
