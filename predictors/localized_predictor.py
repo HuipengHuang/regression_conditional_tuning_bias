@@ -23,7 +23,6 @@ class LocalizedPredictor:
         self.bandwidth = args.bandwidth if hasattr(args, 'bandwidth') else 1.0  # Kernel bandwidth
         self.H = None
         self.Q = None
-        self.feature = None
 
     def compute_cal_score(self, cal_loader):
         cal_score = torch.tensor([], device=self.device)
@@ -39,7 +38,7 @@ class LocalizedPredictor:
         cal_score, index = torch.sort(cal_score, dim=0, descending=False)
         self.cal_score = cal_score
         feature = feature[index]
-        self.feature = feature
+        self.cal_feature = feature
 
         H = torch.zeros(size=(cal_score.shape[0] + 2, cal_score.shape[0] + 2), device=self.device)
         for i in range(cal_score.shape[0]):
