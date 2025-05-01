@@ -60,8 +60,8 @@ class LocalizedPredictor:
 
 
     def calibrate_instance(self, data, target, alpha):
-        logits = self.combined_net(data.view(1, -1))
-        test_feature = self.combined_net.get_feature(data.view(1, -1))
+        logits = self.combined_net(data)
+        test_feature = self.combined_net.get_feature(data)
         self.get_weight(test_feature)
         n = self.cal_score.shape[0]
         theta_p = torch.zeros(size=(n + 1,), device=self.device)
@@ -123,6 +123,7 @@ class LocalizedPredictor:
 
             for data, target in test_loader:
                 data = data.to(self.device)
+                print(data.shape)
                 target = target.to(self.device)
                 for i in range(data.shape[0]):
                     prediction_set_size, coverage = self.calibrate_instance(data[i], target[i], alpha=self.alpha)
