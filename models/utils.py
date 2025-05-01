@@ -1,6 +1,6 @@
 import torch
 import torchvision.models as models
-from resnet50 import ResNet50
+from .resnet50 import ResNet50
 
 def build_model(model_type, pretrained, num_classes, device, args):
     if model_type == 'resnet18':
