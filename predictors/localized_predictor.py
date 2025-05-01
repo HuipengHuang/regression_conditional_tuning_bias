@@ -102,7 +102,7 @@ class LocalizedPredictor:
 
         threshold = self.cal_score[optimal_k]
         prob = torch.softmax(logits, dim=-1)
-        score = self.score_function(prob)
+        score = self.score_function(prob)[0]
         prediction_set_size = torch.sum(score <= threshold).item()
         coverage = 1 if score[target] < threshold else 0
         return prediction_set_size, coverage
