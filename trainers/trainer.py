@@ -18,7 +18,11 @@ class Trainer:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.net = models.utils.build_model(args.model, (args.pretrained == "True"), num_classes=num_classes, device=self.device, args=args)
         if args.load == "True":
-            self.net.load_state_dict(torch.load(f"./data/{self.args.dataset}_{self.args.model}{0}net.pth"))
+            if args.predictor == "local":
+                p = f"./data/local_{self.args.dataset}_{self.args.model}{0}net.pth"
+            else:
+                p = f"./data/{self.args.dataset}_{self.args.model}{0}net.pth"
+            self.net.load_state_dict(torch.load(p))
         self.batch_size = args.batch_size
         if args.optimizer == 'sgd':
             self.optimizer = torch.optim.SGD(self.net.parameters(), lr=args.learning_rate, momentum=args.momentum, weight_decay=args.weight_decay)
@@ -80,11 +84,14 @@ class Trainer:
 
             i = 0
             while (True):
-                net_path = f"./data/{self.args.dataset}_{self.args.model}{i}net.pth"
-                if os.path.exists(net_path):
+                if self.args.predictor == "local":
+                    p = f"./data/local_{self.args.dataset}_{self.args.model}{0}net.pth"
+                else:
+                    p = f"./data/{self.args.dataset}_{self.args.model}{0}net.pth"
+                if os.path.exists(p):
                     i += 1
                     continue
-                torch.save(self.net.state_dict(), net_path)
+                torch.save(self.net.state_dict(), p)
                 break
         else:
             if self.adapter is None:
