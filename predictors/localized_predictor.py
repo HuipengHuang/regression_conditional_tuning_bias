@@ -62,7 +62,7 @@ class LocalizedPredictor:
     def calibrate_instance(self, data, target, alpha):
         data = data.unsqueeze(dim=0)
         logits = self.combined_net(data)
-        test_feature = self.combined_net.get_feature(data)
+        test_feature = self.combined_net.get_features(data)
         self.get_weight(test_feature)
         n = self.cal_score.shape[0]
         theta_p = torch.zeros(size=(n + 1,), device=self.device)
