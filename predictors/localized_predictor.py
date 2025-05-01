@@ -65,14 +65,12 @@ class LocalizedPredictor:
         test_feature = self.combined_net.get_features(data)
         self.get_weight(test_feature)
         n = self.cal_score.shape[0]
-        theta_p = torch.zeros(size=(n + 1,), device=self.device)
-        theta = torch.zeros(size=(n + 1,), device=self.device)
-        theta_hat = torch.zeros(size=(n + 1,), device=self.device)
+        theta_p = torch.zeros(size=(n + 2,), device=self.device)
+        theta = torch.zeros(size=(n + 2,), device=self.device)
+        theta_hat = torch.zeros(size=(n + 2,), device=self.device)
         A_1, A_2, A_3 = [], [], []
 
         for i in range(1, n + 2):
-            print(n, self.Q.shape, self.H.shape)
-            print(i, n)
             theta_p[i] = (self.Q[i, i - 1] + self.H[i, n+1]) / (self.Q[i, n] + self.H[i, n+1])
             theta[i] = self.Q[i, i - 1] / (self.Q[i, n] + self.H[i, n+1])
             theta_hat[i] = self.Q[n+1, i] / (torch.sum(self.H[n+1, ]))
@@ -87,7 +85,7 @@ class LocalizedPredictor:
         theta_A_3 = [i - 1 for i in A_3]
         L1, L2, L3 = len(A_1), len(A_2), len(A_3)
         S_k = []
-        for k in range(n+1):
+        for k in range(1, n+2):
             c1, c2, c3 = 0, 0, 0
             while c1 < L1 and theta_A_1[c1] < theta_hat[k]:
                 c1 += 1
