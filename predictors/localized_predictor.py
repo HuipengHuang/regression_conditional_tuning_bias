@@ -31,7 +31,7 @@ class LocalizedPredictor:
         for data, target in cal_loader:
             data, target = data.to(self.device), target.to(self.device)
             logits = self.combined_net(data)
-            feature = torch.cat([feature, self.combined_net.get_features()])
+            feature = torch.cat([feature, self.combined_net.get_features(data)])
             prob = torch.softmax(logits, dim=-1)
 
             batch_score = self.score_function.compute_target_score(prob, target)
