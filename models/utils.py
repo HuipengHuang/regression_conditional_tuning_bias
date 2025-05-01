@@ -8,7 +8,7 @@ def build_model(model_type, pretrained, num_classes, device, args):
     elif model_type == "resnet34":
         net = models.resnet34(weights=models.ResNet34_Weights.IMAGENET1K_V1 if pretrained else None)
     elif model_type == "resnet50":
-        net = ResNet50(pretrained=pretrained is not None)
+        net = ResNet50(pretrained=pretrained is not None, num_classes=num_classes)
     elif model_type == "resnet101":
         net = models.resnet101(weights=models.ResNet101_Weights.IMAGENET1K_V1 if pretrained else None)
     elif model_type == "resnet152":
