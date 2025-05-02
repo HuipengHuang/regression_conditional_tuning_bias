@@ -35,7 +35,7 @@ def build_model(model_type, pretrained, num_classes, device, args):
         if model_type != "resnet50":
             net.classifier = torch.nn.Linear(net.classifier.in_features, num_classes)
     if args.dataset == "cifar100":
-        net.conv1 = torch.nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
-        net.maxpool = torch.nn.Identity()
+        net.resnet.conv1 = torch.nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
+        net.resnet.maxpool = torch.nn.Identity()
     return net.to(device)
 
