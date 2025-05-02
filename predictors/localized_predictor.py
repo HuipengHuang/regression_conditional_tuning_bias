@@ -42,11 +42,17 @@ class LocalizedPredictor:
 
         n = len(self.cal_feature)
         features = self.cal_feature
+        H = torch.zeros((n, n), device=self.device)
 
-        diff = features.unsqueeze(1) - features.unsqueeze(0)  # [5000, 5000, D]
-        norms = torch.norm(diff, dim=-1)  # [5000, 5000]
-        H = torch.exp(-norms ** 2 / (2 * self.bandwidth ** 2))  # [5000, 5000]
-        # Pad with zeros for +2 dimensions
+        # Process in chunks to reduce memory
+        chunk_size = 500  # Adjust based on GPU memory
+        for i in range(0, n, chunk_size):
+            for j in range(0, n, chunk_size):
+                chunk_diff = features[i:i + chunk_size].unsqueeze(1) - features[j:j + chunk_size].unsqueeze(
+                    0)  # [chunk, chunk, D]
+                chunk_norms = torch.norm(chunk_diff, dim=-1)  # [chunk, chunk]
+                H[i:i + chunk_size, j:j + chunk_size] = torch.exp(-chunk_norms ** 2 / (2 * self.bandwidth ** 2))
+
         self.H = torch.zeros((n + 2, n + 2), device=self.device)
         self.H[1:-1, 1:-1] = H
 
