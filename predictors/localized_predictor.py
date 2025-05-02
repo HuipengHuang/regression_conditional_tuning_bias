@@ -97,6 +97,7 @@ class LocalizedPredictor:
             while c3 < L3 and theta_A_3[c3] < k-1:
                 c3 += 1
             S_k.append((c1+c2+c3)/(n+1))
+        print(S_k)
         optimal_k = -1
         for i in range(n+1):
             if S_k[i] > 1 - alpha:
