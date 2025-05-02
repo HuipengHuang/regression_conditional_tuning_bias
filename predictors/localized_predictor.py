@@ -62,8 +62,8 @@ class LocalizedPredictor:
         cal_features = self.cal_feature  # [5000, feature_dim]
         diff = cal_features - test_feature.unsqueeze(0)  # [5000, feature_dim]
         similarities = torch.exp(-torch.norm(diff, dim=1) ** 2 / (2 * self.bandwidth ** 2))  # [5000]
-        similarities = torch.cat([similarities, torch.tensor(0.5, device=self.device)], dim=0)
-        # Update H matrix efficiently
+        similarities = torch.cat([similarities, torch.tensor([0.5], device=self.device)], dim=0)
+
         self.H[1:, -1] = similarities
         self.H[-1, 1:] = similarities
 
