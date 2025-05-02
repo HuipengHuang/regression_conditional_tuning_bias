@@ -88,8 +88,9 @@ class LocalizedPredictor:
         theta_A_3 = [i - 1 for i in A_3]
         L1, L2, L3 = len(A_1), len(A_2), len(A_3)
         S_k = []
+        c1, c2, c3 = 0, 0, 0
         for k in range(1, n+2):
-            c1, c2, c3 = 0, 0, 0
+
             while c1 < L1 and theta_A_1[c1] < theta_hat[k]:
                 c1 += 1
             while c2 < L2 and theta_A_2[c2] < theta_hat[k]:
