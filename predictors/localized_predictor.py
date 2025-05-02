@@ -119,10 +119,10 @@ class LocalizedPredictor:
 
         # Find optimal k
         valid_k = torch.where(S_k.squeeze() > (1 - alpha))[0]
-        optimal_k = valid_k[0] if len(valid_k) > 0 else n - 1
+        optimal_k = valid_k[0]
 
         # Final calculations
-        threshold = self.cal_score[optimal_k]
+        threshold = self.v_hat[optimal_k]
         prob = torch.softmax(logits, dim=-1)
         acc = (torch.argmax(prob) == target).to(torch.int)
         score = self.score_function(prob)[0]
