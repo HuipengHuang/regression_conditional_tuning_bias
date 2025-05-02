@@ -19,7 +19,7 @@ class Trainer:
         self.net = models.utils.build_model(args.model, (args.pretrained == "True"), num_classes=num_classes, device=self.device, args=args)
         if args.load == "True":
             if args.predictor == "local":
-                p = f"./data/local_{self.args.dataset}_{self.args.model}{0}net.pth"
+                p = f"./data/{self.args.dataset}_{self.args.model}{0}net.pth"
             else:
                 p = f"./data/local_{self.args.dataset}_{self.args.model}{0}net.pth"
             self.net.load_state_dict(torch.load(p))
