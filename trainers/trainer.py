@@ -21,7 +21,7 @@ class Trainer:
             if args.predictor == "local":
                 p = f"./data/{self.args.dataset}_{self.args.model}{0}net.pth"
             else:
-                p = f"./data/local_{self.args.dataset}_{self.args.model}{0}net.pth"
+                p = f"./data/{self.args.dataset}_{self.args.model}{0}net.pth"
             self.net.load_state_dict(torch.load(p))
         self.batch_size = args.batch_size
         if args.optimizer == 'sgd':
