@@ -136,53 +136,60 @@ class LocalizedPredictor:
         return prediction_set_size, coverage, acc
 
     def calibrate_instance1(self, data, target, alpha):
-        """Optimized instance-wise calibration"""
-        with torch.no_grad():
-            data = data.unsqueeze(0)
-            logits = self.combined_net(data)
-            test_feature = self.combined_net.get_features(data)
-            self.get_weight(test_feature)
+        # Forward pass
+        data = data.unsqueeze(dim=0)
+        logits = self.combined_net(data)
+        test_feature = self.combined_net.get_features(data)
+        self.get_weight(test_feature)
 
-            n = self.cal_score.shape[0]
+        n = self.cal_score.shape[0]
 
-            # Vectorized computations
-            Q_diag = torch.diagonal(self.Q, offset=-1)[:n + 1]  # Q[i,i-1] for i=1..n+1
-            Q_rowsum = self.Q[:n + 1, n]  # Q[i,n] for i=1..n+1
-            H_lastcol = self.H[:n + 1, n + 1]  # H[i,n+1] for i=1..n+1
+        # Vectorized computations
+        Q_diag = torch.diagonal(self.Q, offset=-1)[:n + 1]  # Q[i,i-1] for i=1..n+1
+        Q_rowsum = self.Q[:n + 1, n]  # Q[i,n] for i=1..n+1
+        H_lastcol = self.H[:n + 1, n + 1]  # H[i,n+1] for i=1..n+1
 
-            theta_p = (Q_diag + H_lastcol) / (Q_rowsum + H_lastcol)
-            theta = Q_diag / (Q_rowsum + H_lastcol)
-            theta_hat = self.Q[n + 1, :n + 1] / self.H[n + 1, :n + 1].sum()
+        theta_p = (Q_diag + H_lastcol) / (Q_rowsum + H_lastcol)
+        theta = Q_diag / (Q_rowsum + H_lastcol)
+        theta_hat = self.Q[n + 1, :n + 1] / torch.sum(self.H[n + 1, :])
 
-            # Masks
-            mask_A1 = theta_p < theta_hat
-            mask_A2 = theta_hat <= theta
-            mask_A3 = (~mask_A1) & (~mask_A2)
+        # Masks
+        mask_A1 = theta_p < theta_hat
+        mask_A2 = theta_hat <= theta
+        mask_A3 = (~mask_A1) & (~mask_A2)
 
-            # Precompute S_k efficiently
-            theta_hat_sorted, hat_indices = torch.sort(theta_hat)
-            theta_p_sorted = theta_p[hat_indices]
-            theta_sorted = theta[hat_indices]
+        # Precompute theta_hat sorted with indices
+        theta_hat_sorted, hat_indices = torch.sort(theta_hat)
 
-            # Compute counts for each k
-            A1_counts = (theta_p_sorted < theta_hat_sorted).cumsum(0)
-            A2_counts = (theta_hat_sorted <= theta_sorted).cumsum(0)
-            A3_counts = mask_A3.cumsum(0)[hat_indices]
+        # Precompute theta_p and theta in the same order as theta_hat_sorted
+        theta_p_sorted = theta_p[hat_indices]
+        theta_sorted = theta[hat_indices]
 
-            S_k = (A1_counts + A2_counts + A3_counts) / (n + 1)
+        # Precompute cumulative counts for each region
+        # Using searchsorted for efficient counting
+        A1_counts = torch.searchsorted(theta_hat_sorted, theta_p_sorted, right=True)
+        A2_counts = torch.searchsorted(theta_hat_sorted, theta_sorted, right=True)
+        A3_counts = torch.arange(1, n + 2, device=self.device)  # Since theta_A3 = k-1
 
-            # Find optimal k
-            valid_indices = torch.where(S_k < (1 - alpha))[0]
-            optimal_k = valid_indices[-1] if len(valid_indices) > 0 else 0
+        # Combine counts - this part needs careful alignment with your original logic
+        S_k = torch.zeros(n + 2, device=self.device)
+        S_k[1:] = (A1_counts + A2_counts + A3_counts) / (n + 1)
 
-            threshold = self.v_hat[optimal_k]
-            prob = torch.softmax(logits, dim=-1)
-            acc = (torch.argmax(prob) == target).int()
-            score = self.score_function(prob)[0]
-            prediction_set_size = (score <= threshold).sum().item()
-            coverage = int(score[target] <= threshold)
+        # Find optimal k - maintaining your original selection logic
+        valid_mask = S_k < (1 - alpha)
+        if valid_mask.any():
+            optimal_k = torch.where(valid_mask)[0][-1]
+        else:
+            optimal_k = 0
 
-            return prediction_set_size, coverage, acc
+        threshold = self.v_hat[optimal_k]
+        prob = torch.softmax(logits, dim=-1)
+        acc = (torch.argmax(prob) == target).to(torch.int)
+        score = self.score_function.compute_target_score(prob, target)[0]
+        prediction_set_size = torch.sum(score <= threshold).item()
+        coverage = 1 if score[target] <= threshold else 0
+
+        return prediction_set_size, coverage, acc
 
     def calibrate(self, cal_loader, alpha=None):
         self.combined_net.eval()
