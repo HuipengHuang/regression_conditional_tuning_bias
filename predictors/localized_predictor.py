@@ -102,25 +102,29 @@ class LocalizedPredictor:
         mask_A3 = (~mask_A1) & (~mask_A2)
 
         # Sorted values for binary search
-        theta_A1_sorted = torch.sort(theta_p[mask_A1]).values
-        theta_A2_sorted = torch.sort(theta[mask_A2]).values
-        A3_indices = torch.where(mask_A3)[0]  # Already 0-based indices
+        theta_A1 = theta_p[mask_A1]
+        theta_A2 = theta[mask_A2]
+        theta_A3 = torch.where(mask_A3)[0]
+        L1, L2, L3 = theta_A1.shape[0], theta_A2.shape[0], theta_A3.shape[0]
 
-        # Compute counts
-        theta_hat_expanded = theta_hat.unsqueeze(1)
-        A1_count = torch.searchsorted(theta_A1_sorted, theta_hat_expanded).squeeze(-1)
-        A2_count = torch.searchsorted(theta_A2_sorted, theta_hat_expanded).squeeze(-1)
+        S_k = [0,]
+        c1, c2, c3 = 0, 0, 0
+        theta_A1 = torch.cat([torch.tensor([0], device=self.device), theta_A1], dim=0)
+        theta_A2 = torch.cat([torch.tensor([0], device=self.device), theta_A2], dim=0)
+        theta_A3 = torch.cat([torch.tensor([0], device=self.device), theta_A3], dim=0)
+        for k in range(1, n + 2):
+            while c1 < L1 and theta_A1[c1+1] < theta_hat[k]:
+                c1 += 1
+            while c2 < L2 and theta_A2[c2+1] < theta_hat[k]:
+                c2 += 1
+            while c3 < L3 and theta_A3[c3+1] < k - 1:
+                c3 += 1
+            S_k.append((c1 + c2 + c3))
+
+        S_k = torch.tensor(S_k, device=self.device) / (n + 1)
+        optimal_k = S_k[S_k < (1 - alpha)].shape[0] - 1
 
 
-        A3_count = torch.tensor([(A3_indices < (k - 1)).sum().item() for k in range(1, n + 2)], device=self.device)
-        print(A3_count, len(A3_indices))
-
-        S_k = (A1_count + A2_count + A3_count) / (n + 1)
-
-        valid_k = torch.where(S_k.squeeze() < (1 - alpha))[0]
-        optimal_k = valid_k[-1].item()
-
-        # Final calculations
         threshold = self.v_hat[optimal_k]
         prob = torch.softmax(logits, dim=-1)
         acc = (torch.argmax(prob) == target).to(torch.int)
