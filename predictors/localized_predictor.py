@@ -104,11 +104,12 @@ class LocalizedPredictor:
         # Sorted values for binary search
         theta_A1 = theta_p[mask_A1]
         theta_A2 = theta[mask_A2]
-        theta_A3 = torch.where(mask_A3)[0]
+        theta_A3 = torch.where(mask_A3)[0] + 1
         L1, L2, L3 = theta_A1.shape[0], theta_A2.shape[0], theta_A3.shape[0]
 
         S_k = [0,]
         c1, c2, c3 = 0, 0, 0
+        theta_hat = torch.cat([torch.tensor([0], device=self.device), theta_hat], dim=0)
         theta_A1 = torch.cat([torch.tensor([0], device=self.device), theta_A1], dim=0)
         theta_A2 = torch.cat([torch.tensor([0], device=self.device), theta_A2], dim=0)
         theta_A3 = torch.cat([torch.tensor([0], device=self.device), theta_A3], dim=0)
