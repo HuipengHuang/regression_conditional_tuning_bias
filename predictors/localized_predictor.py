@@ -108,8 +108,8 @@ class LocalizedPredictor:
 
         # Compute counts
         theta_hat_expanded = theta_hat.unsqueeze(1)
-        A1_count = torch.searchsorted(theta_A1_sorted, theta_hat_expanded)
-        A2_count = torch.searchsorted(theta_A2_sorted, theta_hat_expanded)
+        A1_count = torch.searchsorted(theta_A1_sorted, theta_hat_expanded).squeeze(-1)
+        A2_count = torch.searchsorted(theta_A2_sorted, theta_hat_expanded).squeeze(-1)
 
 
         A3_count = torch.tensor([(A3_indices < (k - 1)).sum().item() for k in range(1, n + 2)], device=self.device)
