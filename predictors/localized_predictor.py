@@ -87,8 +87,7 @@ class LocalizedPredictor:
         n = self.cal_score.shape[0]
 
         # Vectorized computations
-        Q_diag = torch.diagonal(self.Q, offset=-1)[1:n+2]  # Q[i,i-1] for i=1..n+1
-        print(Q_diag.shape)
+        Q_diag = torch.diagonal(self.Q, offset=-1)# Q[i,i-1] for i=1..n+1
         Q_rowsum = self.Q[1:n+2, n]  # Q[i,n] for i=1..n+1
         H_lastcol = self.H[1:n+2, n + 1]  # H[i,n+1] for i=1..n+1
 
