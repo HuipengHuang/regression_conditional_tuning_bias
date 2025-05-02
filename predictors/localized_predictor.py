@@ -52,8 +52,7 @@ class LocalizedPredictor:
         chunk_size = 500  # Adjust based on GPU memory
         for i in range(0, n, chunk_size):
             for j in range(0, n, chunk_size):
-                chunk_diff = features[i:i + chunk_size].unsqueeze(1) - features[j:j + chunk_size].unsqueeze(
-                    0)  # [chunk, chunk, D]
+                chunk_diff = features[i:i + chunk_size].unsqueeze(1) - features[j:j + chunk_size].unsqueeze(0) / 100  # [chunk, chunk, D]
                 chunk_norms = torch.norm(chunk_diff, dim=-1)  # [chunk, chunk]
                 H[i:i + chunk_size, j:j + chunk_size] = torch.exp(-chunk_norms ** 2 / (2 * self.bandwidth ** 2))
 
@@ -69,7 +68,7 @@ class LocalizedPredictor:
         test_feature = test_feature.squeeze(0)  # [feature_dim]
 
         cal_features = self.cal_feature  # [5000, feature_dim]
-        diff = cal_features - test_feature.unsqueeze(0)  # [5000, feature_dim]
+        diff = cal_features - test_feature.unsqueeze(0) / 100 # [5000, feature_dim]
         similarities = torch.exp(-torch.norm(diff, dim=1) ** 2 / (2 * self.bandwidth ** 2))  # [5000]
         similarities = torch.cat([similarities, torch.tensor([1], device=self.device)], dim=0)
 
