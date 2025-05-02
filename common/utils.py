@@ -46,7 +46,6 @@ def build_dataset(args):
         train_dataset = CIFAR100(root="/data/dataset", download=False, train=True, transform=train_transform)
         cal_test_dataset = CIFAR100(root='/data/dataset', download=False, train=False,
                                  transform=val_transform)
-        cal_test_dataset = Subset(cal_test_dataset, indices=range(200))
 
 
     elif dataset_name == "imagenet":
