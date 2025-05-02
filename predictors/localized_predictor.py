@@ -113,6 +113,7 @@ class LocalizedPredictor:
 
 
         A3_count = torch.tensor([(A3_indices < (k - 1)).sum().item() for k in range(1, n + 2)], device=self.device)
+        print(A3_count, len(A3_indices))
 
         S_k = (A1_count + A2_count + A3_count) / (n + 1)
 
