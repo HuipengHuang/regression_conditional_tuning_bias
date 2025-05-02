@@ -118,9 +118,9 @@ class LocalizedPredictor:
         S_k = (A1_count + A2_count + A3_count) / (n + 1)
 
         # Find optimal k
-        valid_k = torch.where(S_k.squeeze() > (1 - alpha))[0]
+        valid_k = torch.where(S_k.squeeze() > (1 - alpha))
         print(torch.where(S_k.squeeze() > (1 - alpha)))
-        optimal_k = valid_k[0]
+        optimal_k = valid_k[0] - 1
 
         # Final calculations
         threshold = self.v_hat[optimal_k]
