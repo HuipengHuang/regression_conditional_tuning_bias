@@ -87,7 +87,7 @@ class LocalizedPredictor:
         theta_A_2 = [theta[i] for i in A_2]
         theta_A_3 = [i - 1 for i in A_3]
         L1, L2, L3 = len(A_1), len(A_2), len(A_3)
-        S_k = []
+        S_k = [0]
         c1, c2, c3 = 0, 0, 0
         for k in range(1, n+2):
 
@@ -100,7 +100,7 @@ class LocalizedPredictor:
             S_k.append((c1+c2+c3)/(n+1))
         print(S_k)
         optimal_k = -1
-        for i in range(n+1):
+        for i in range(1, n+2):
             if S_k[i] > 1 - alpha:
                 optimal_k = i - 1
                 break
