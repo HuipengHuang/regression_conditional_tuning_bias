@@ -65,8 +65,8 @@ class Trainer:
         loss.backward()
         self.optimizer.step()
 
-    def train_epoch_without_adapter(self, data_loader):
-        for data, target in tqdm(data_loader):
+    def train_epoch_without_adapter(self, data_loader, epoch=None):
+        for data, target in tqdm(data_loader, desc=f"Epoch {epoch}"):
             self.train_batch_without_adapter(data, target)
 
     def train_epoch_with_adapter(self, data_loader):
@@ -78,7 +78,7 @@ class Trainer:
         if self.args.load == "False":
             if self.adapter is None:
                 for epoch in range(epochs):
-                    self.train_epoch_without_adapter(data_loader)
+                    self.train_epoch_without_adapter(data_loader, epoch)
             else:
                 for epoch in range(epochs):
                     self.train_epoch_with_adapter(data_loader)
@@ -98,7 +98,7 @@ class Trainer:
         else:
             if self.adapter is None:
                 for epoch in range(epochs):
-                    self.train_epoch_without_adapter(data_loader)
+                    self.train_epoch_without_adapter(data_loader, epoch)
             else:
                 for epoch in range(epochs):
                     self.train_epoch_with_adapter(data_loader)
