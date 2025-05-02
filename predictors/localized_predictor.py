@@ -25,15 +25,16 @@ class LocalizedPredictor:
 
     def compute_cal_score(self, cal_loader):
         cal_score = torch.tensor([], device=self.device)
-        feature = torch.tensor([], device=self.device)
+        feature = []
         for data, target in cal_loader:
             data, target = data.to(self.device), target.to(self.device)
             logits = self.combined_net(data)
-            feature = torch.cat([feature, self.combined_net.get_features(data)])
+            feature = feature.append(self.combined_net.get_features(data))
             prob = torch.softmax(logits, dim=-1)
 
             batch_score = self.score_function.compute_target_score(prob, target)
             cal_score = torch.cat([cal_score, batch_score], dim=0)
+        feature = torch.cat(feature, dim=0)
         cal_score, index = torch.sort(cal_score, dim=0, descending=False)
         self.cal_score = cal_score
         feature = feature[index]
