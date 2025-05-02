@@ -56,9 +56,7 @@ class LocalizedPredictor:
 
     def get_weight(self, test_feature):
         test_feature = test_feature.squeeze(0)  # [feature_dim]
-        n = len(self.cal_feature)
 
-        # Vectorized kernel computation (100x faster)
         cal_features = self.cal_feature  # [5000, feature_dim]
         diff = cal_features - test_feature.unsqueeze(0)  # [5000, feature_dim]
         similarities = torch.exp(-torch.norm(diff, dim=1) ** 2 / (2 * self.bandwidth ** 2))  # [5000]
@@ -69,54 +67,55 @@ class LocalizedPredictor:
 
         self.Q = torch.cumsum(self.H, dim=-1)
 
-
     def calibrate_instance(self, data, target, alpha):
+        # Forward pass (unchanged)
         data = data.unsqueeze(dim=0)
         logits = self.combined_net(data)
         test_feature = self.combined_net.get_features(data)
         self.get_weight(test_feature)
+
         n = self.cal_score.shape[0]
-        theta_p = torch.zeros(size=(n + 2,), device=self.device)
-        theta = torch.zeros(size=(n + 2,), device=self.device)
-        theta_hat = torch.zeros(size=(n + 2,), device=self.device)
-        A_1, A_2, A_3 = [], [], []
 
-        for i in range(1, n + 2):
-            theta_p[i] = (self.Q[i, i - 1] + self.H[i, n+1]) / (self.Q[i, n] + self.H[i, n+1])
-            theta[i] = self.Q[i, i - 1] / (self.Q[i, n] + self.H[i, n+1])
-            theta_hat[i] = self.Q[n+1, i] / (torch.sum(self.H[n+1, ]))
-            if theta_p[i] < theta_hat[i]:
-                A_1.append(i)
-            if theta_hat[i] <= theta[i]:
-                A_2.append(i)
-            if theta_p[i] >= theta_hat[i] and theta_hat[i] > theta[i]:
-                A_3.append(i)
-        theta_A_1 = [theta_p[i] for i in A_1]
-        theta_A_2 = [theta[i] for i in A_2]
-        theta_A_3 = [i - 1 for i in A_3]
-        L1, L2, L3 = len(A_1), len(A_2), len(A_3)
-        S_k = []
-        for k in range(1, n+2):
-            c1, c2, c3 = 0, 0, 0
-            while c1 < L1 and theta_A_1[c1] < theta_hat[k]:
-                c1 += 1
-            while c2 < L2 and theta_A_2[c2] < theta_hat[k]:
-                c2 += 1
-            while c3 < L3 and theta_A_3[c3] < k-1:
-                c3 += 1
-            S_k.append((c1+c2+c3)/(n+1))
-        optimal_k = -1
-        for i in range(n+1):
-            if S_k[i] > 1 - alpha:
-                optimal_k = i - 1
-                break
+        # Vectorized computations for theta_p, theta, theta_hat
+        Q_diag = torch.diagonal(self.Q, offset=-1)[:n + 1]  # Q[i,i-1] for i=1..n+1
+        Q_rowsum = self.Q[:n + 1, n]  # Q[i,n] for i=1..n+1
+        H_lastcol = self.H[:n + 1, n + 1]  # H[i,n+1] for i=1..n+1
 
+        theta_p = (Q_diag + H_lastcol) / (Q_rowsum + H_lastcol)
+        theta = Q_diag / (Q_rowsum + H_lastcol)
+        theta_hat = self.Q[n + 1, :n + 1] / torch.sum(self.H[n + 1, :])
+
+        # Vectorized condition checks
+        mask_A1 = theta_p < theta_hat
+        mask_A2 = theta_hat <= theta
+        mask_A3 = (~mask_A1) & (~mask_A2)
+
+        # Precompute sorted lists for binary search
+        theta_A1_sorted = torch.sort(theta_p[mask_A1]).values
+        theta_A2_sorted = torch.sort(theta[mask_A2]).values
+        A3_indices = torch.where(mask_A3)[0]  # Already 0-based indices
+
+        # Compute S_k efficiently
+        theta_hat_expanded = theta_hat.unsqueeze(1)
+        S_k = (
+                      torch.searchsorted(theta_A1_sorted, theta_hat_expanded).float() +
+                      torch.searchsorted(theta_A2_sorted, theta_hat_expanded).float() +
+                      torch.searchsorted(A3_indices.float(),
+                                         torch.arange(n + 1, device=self.device).unsqueeze(1)).float()
+              ) / (n + 1)
+
+        # Find optimal k
+        valid_k = torch.where(S_k.squeeze() > (1 - alpha))[0]
+        optimal_k = valid_k[0] - 1 if len(valid_k) > 0 else n - 1
+
+        # Final calculations (unchanged)
         threshold = self.cal_score[optimal_k]
         prob = torch.softmax(logits, dim=-1)
         acc = (torch.argmax(prob) == target).to(torch.int)
         score = self.score_function(prob)[0]
         prediction_set_size = torch.sum(score <= threshold).item()
         coverage = 1 if score[target] < threshold else 0
+
         return prediction_set_size, coverage, acc
 
 
