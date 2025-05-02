@@ -40,7 +40,7 @@ class LocalizedPredictor:
         feature = torch.cat(feature, dim=0)
         cal_score, index = torch.sort(cal_score, dim=0, descending=False)
         self.cal_score = cal_score
-        self.v_hat = torch.cat([torch.tensor([0], device=self.device), cal_score, torch.tensor([torch.inf], device=self.device)], dim=0)
+        self.v_hat = torch.cat([torch.tensor(torch.tensor([-torch.inf], device=self.device), device=self.device), cal_score, torch.tensor([torch.inf], device=self.device)], dim=0)
         feature = feature[index]
         self.cal_feature = feature
 
