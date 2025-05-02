@@ -119,7 +119,7 @@ class LocalizedPredictor:
 
         # Find optimal k
         valid_k = torch.where(S_k.squeeze() > (1 - alpha))[0]
-        print(S_k)
+        print(torch.where(S_k.squeeze() > (1 - alpha)))
         optimal_k = valid_k[0]
 
         # Final calculations
