@@ -87,9 +87,9 @@ class Trainer:
             if self.args.save_model == "True":
                 while (True):
                     if self.args.predictor == "local":
-                        p = f"./data/local_{self.args.dataset}_{self.args.model}{0}net.pth"
+                        p = f"./data/local_{self.args.dataset}_{self.args.model}{i}net.pth"
                     else:
-                        p = f"./data/{self.args.dataset}_{self.args.model}{0}net.pth"
+                        p = f"./data/{self.args.dataset}_{self.args.model}{i}net.pth"
                     if os.path.exists(p):
                         i += 1
                         continue
