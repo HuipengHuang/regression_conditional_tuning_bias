@@ -123,8 +123,6 @@ class LocalizedPredictor:
 
         S_k = torch.tensor(S_k, device=self.device) / (n + 1)
         optimal_k = S_k[S_k < (1 - alpha)].shape[0] - 1
-        print(S_k)
-        print(self.Q)
 
         threshold = self.v_hat[optimal_k]
         prob = torch.softmax(logits, dim=-1)
