@@ -115,6 +115,7 @@ class LocalizedPredictor:
         S_k = (A1_count + A2_count + A3_count) / (n + 1)
 
         # Find optimal k
+        print(S_k)
         valid_k = torch.where(S_k.squeeze() > (1 - alpha))[0]
         optimal_k = valid_k[0]
 
