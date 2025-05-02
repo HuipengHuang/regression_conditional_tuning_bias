@@ -88,9 +88,9 @@ class LocalizedPredictor:
         n = self.cal_score.shape[0]
 
         # Vectorized computations
-        Q_diag = torch.diagonal(self.Q, offset=-1)[:n + 1]  # Q[i,i-1]
-        Q_rowsum = self.Q[:n + 1, n]  # Q[i,n]
-        H_lastcol = self.H[:n + 1, n + 1]  # H[i,n+1]
+        Q_diag = torch.diagonal(self.Q, offset=-1)[:n + 1]  # Q[i,i-1] for i=1..n+1
+        Q_rowsum = self.Q[:n + 1, n]  # Q[i,n] for i=1..n+1
+        H_lastcol = self.H[:n + 1, n + 1]  # H[i,n+1] for i=1..n+1
 
         theta_p = (Q_diag + H_lastcol) / (Q_rowsum + H_lastcol)
         theta = Q_diag / (Q_rowsum + H_lastcol)
@@ -104,26 +104,25 @@ class LocalizedPredictor:
         # Sorted values for binary search
         theta_A1_sorted = torch.sort(theta_p[mask_A1]).values
         theta_A2_sorted = torch.sort(theta[mask_A2]).values
-        A3_indices = torch.where(mask_A3)[0]  # 0-based indices
+        A3_indices = torch.where(mask_A3)[0]  # Already 0-based indices
 
         # Compute counts
         theta_hat_expanded = theta_hat.unsqueeze(1)
         A1_count = torch.searchsorted(theta_A1_sorted, theta_hat_expanded)
         A2_count = torch.searchsorted(theta_A2_sorted, theta_hat_expanded)
-        A3_count = torch.sum((A3_indices.unsqueeze(1) < torch.arange(n + 1, device=self.device)))
+
+        # Corrected A3_count calculation
+        k_range = torch.arange(1, n + 2, device=self.device)  # k values from 1 to n+1
+        A3_count = torch.sum((A3_indices.unsqueeze(1) < (k_range - 1)), dim=0).unsqueeze(1)
 
         S_k = (A1_count + A2_count + A3_count) / (n + 1)
-
+        print(A1_count.shape,A2_count.shape,A3_count.shape)
         # Find optimal k
-        print(S_k)
-        print(A1_count.shape,A2_count.shape,A3_count.shape, (A3_indices.unsqueeze(1) < torch.arange(n + 1, device=self.device).shape))
-        print(S_k.shape)
         valid_k = torch.where(S_k.squeeze() > (1 - alpha))[0]
-        optimal_k = valid_k[0]
+        optimal_k = valid_k[0] if len(valid_k) > 0 else n - 1
 
         # Final calculations
-
-        threshold = self.v_hat[optimal_k]
+        threshold = self.cal_score[optimal_k]
         prob = torch.softmax(logits, dim=-1)
         acc = (torch.argmax(prob) == target).to(torch.int)
         score = self.score_function(prob)[0]
