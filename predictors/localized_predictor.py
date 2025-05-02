@@ -64,8 +64,8 @@ class LocalizedPredictor:
         similarities = torch.exp(-torch.norm(diff, dim=1) ** 2 / (2 * self.bandwidth ** 2))  # [5000]
 
         # Update H matrix efficiently
-        self.H[:, -1] = similarities
-        self.H[-1, :] = similarities
+        self.H[1:-1, -1] = similarities
+        self.H[-1, 1:-1] = similarities
 
         self.Q = torch.cumsum(self.H, dim=-1)
 
