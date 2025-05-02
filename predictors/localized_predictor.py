@@ -116,7 +116,7 @@ class LocalizedPredictor:
 
         # Find optimal k
         print(S_k)
-        print(A1_count.shape,A2_count.shape,A3_count.shape, (A3_indices.unsqueeze(1) < torch.arange(n + 1, device=self.device).shape)
+        print(A1_count.shape,A2_count.shape,A3_count.shape, (A3_indices.unsqueeze(1) < torch.arange(n + 1, device=self.device).shape))
         print(S_k.shape)
         valid_k = torch.where(S_k.squeeze() > (1 - alpha))[0]
         optimal_k = valid_k[0]
