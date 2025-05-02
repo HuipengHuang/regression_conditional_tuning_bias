@@ -42,8 +42,9 @@ class LocalizedPredictor:
 
         H = torch.zeros(size=(cal_score.shape[0] + 2, cal_score.shape[0] + 2), device=self.device)
         for i in range(cal_score.shape[0]):
-            for j in range(cal_score.shape[0]):
-                H[i + 1, j + 1] = self.kernel(feature[i], feature[j])
+            for j in range(i, cal_score.shape[0]):
+                H[i+1, j+1] = self.kernel(feature[i], feature[j])
+                H[j+1, i+1] = H[i+1, j+1]
         self.H = H
 
     def gaussian_kernel(self, x1, x2):
