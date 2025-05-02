@@ -110,12 +110,13 @@ class LocalizedPredictor:
         theta_hat_expanded = theta_hat.unsqueeze(1)
         A1_count = torch.searchsorted(theta_A1_sorted, theta_hat_expanded)
         A2_count = torch.searchsorted(theta_A2_sorted, theta_hat_expanded)
-        A3_count = torch.sum((A3_indices.unsqueeze(1) < torch.arange(n + 1, device=self.device)), dim=0)
+        A3_count = torch.sum((A3_indices.unsqueeze(1) < torch.arange(n + 1, device=self.device)), dim=-1)
 
         S_k = (A1_count + A2_count + A3_count) / (n + 1)
 
         # Find optimal k
         print(S_k)
+        print(A1_count.shape,A2_count.shape,A3_count.shape)
         print(S_k.shape)
         valid_k = torch.where(S_k.squeeze() > (1 - alpha))[0]
         optimal_k = valid_k[0]
