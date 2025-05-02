@@ -43,8 +43,8 @@ def build_dataset(args):
                 np.array([63.0, 62.1, 66.7]) / 255.0),
         ])
 
-        train_dataset = CIFAR100(root="/data/dataset", download=False, train=True, transform=train_transform)
-        cal_test_dataset = CIFAR100(root='/data/dataset', download=False, train=False,
+        train_dataset = CIFAR100(root="./data/dataset", download=True, train=True, transform=train_transform)
+        cal_test_dataset = CIFAR100(root='./data/dataset', download=True, train=False,
                                  transform=val_transform)
 
 
