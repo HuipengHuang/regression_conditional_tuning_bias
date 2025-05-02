@@ -57,6 +57,7 @@ class Predictor:
             total_accuracy = 0
             total_coverage = 0
             total_prediction_set_size = 0
+            instance_coverage_gap = 0
 
             for data, target in test_loader:
                 data, target = data.to(self.device), target.to(self.device)
@@ -69,16 +70,18 @@ class Predictor:
                 batch_score = self.score_function(prob)
                 prediction_set = (batch_score <= self.threshold).to(torch.int)
 
-                total_coverage += prediction_set[torch.arange(target.shape[0]), target].sum().item()
+                target_prediction_set = prediction_set[torch.arange(target.shape[0]), target]
+                total_coverage += target_prediction_set.sum().item()
                 total_prediction_set_size += prediction_set.sum().item()
-
+                instance_coverage_gap += torch.sum(torch.abs((target_prediction_set - (1 - self.alpha))))
 
             accuracy = total_accuracy / len(test_loader.dataset)
             coverage = total_coverage / len(test_loader.dataset)
             avg_set_size = total_prediction_set_size / len(test_loader.dataset)
-
+            instance_coverage_gap = instance_coverage_gap / len(test_loader.dataset)
             result_dict = {f"{self.args.score}_Top1Accuracy": accuracy,
                            f"{self.args.score}_AverageSetSize": avg_set_size,
-                           f"{self.args.score}_Coverage": coverage}
+                           f"{self.args.score}_Coverage": coverage,
+                           f"{self.args.score}_instance_coverage_gap": instance_coverage_gap}
             return result_dict
 

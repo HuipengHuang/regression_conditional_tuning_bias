@@ -166,13 +166,3 @@ class LocalizedPredictor:
                 f"{self.args.score}_AverageSetSize": avg_set_size,
                 f"{self.args.score}_instance_coverage_gap": instance_coverage_gap
             }
-
-
-# Usage example:
-"""
-args = ... # Your args object with alpha, score, etc.
-net = ...  # Your neural network
-predictor = LocalizedPredictor(args, net)
-predictor.calibrate(calibration_loader)
-results = predictor.predict(test_loader)
-"""
