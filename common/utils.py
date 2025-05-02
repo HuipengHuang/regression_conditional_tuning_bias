@@ -28,7 +28,7 @@ def build_dataset(args):
         from torchvision.datasets import CIFAR100
         num_class = 100
         train_transform = transforms.Compose([
-            transforms.Pad(4, padding_mode='reflect'),
+            #transforms.Pad(4, padding_mode='reflect'),
             transforms.RandomHorizontalFlip(),
             transforms.RandomCrop(32),
             transforms.ToTensor(),
