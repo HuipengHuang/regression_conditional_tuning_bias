@@ -1,7 +1,6 @@
 from scores.utils import get_score
 import torch
 import torch.nn as nn
-import math
 
 
 class LocalizedPredictor:

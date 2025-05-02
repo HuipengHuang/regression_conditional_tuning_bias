@@ -46,7 +46,7 @@ def build_dataset(args):
         train_dataset = CIFAR100(root="/data/dataset", download=False, train=True, transform=train_transform)
         cal_test_dataset = CIFAR100(root='/data/dataset', download=False, train=False,
                                  transform=val_transform)
-        #cal_test_dataset = Subset(cal_test_dataset, indices=range(100))
+        cal_test_dataset = Subset(cal_test_dataset, indices=range(1000))
 
     elif dataset_name == "imagenet":
         num_class = 1000
@@ -79,8 +79,6 @@ def build_dataset(args):
     cal_size = int(len(cal_test_dataset) * args.cal_ratio)
     test_size = len(cal_test_dataset) - cal_size
     cal_dataset, test_dataset = random_split(cal_test_dataset, [cal_size, test_size])
-    print("test")
-    print(len(cal_dataset))
     return train_dataset, cal_dataset, test_dataset, num_class
 
 
