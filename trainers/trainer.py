@@ -22,7 +22,10 @@ class Trainer:
                 p = f"./data/{self.args.dataset}_{self.args.model}{0}net.pth"
             else:
                 p = f"./data/{self.args.dataset}_{self.args.model}{0}net.pth"
-            self.net.load_state_dict(torch.load(p))
+            if args.model == "resnet50":
+                self.net.resnet.load_state_dict(torch.load(p))
+            else:
+                self.net.load_state_dict(torch.load(p))
         self.batch_size = args.batch_size
         if args.optimizer == 'sgd':
             self.optimizer = torch.optim.SGD(self.net.parameters(), lr=args.learning_rate, momentum=args.momentum, weight_decay=args.weight_decay)
