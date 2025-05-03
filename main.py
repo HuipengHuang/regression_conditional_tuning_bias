@@ -84,7 +84,7 @@ if args.loss == "conftr" :
 del train_loader
 del train_dataset
 if args.lower_quantile is not None:
-    trainer.predictor.calibrate(cal_loader, args.lower_quantile)
+    trainer.predictor.calibrate(cal_loader, q=args.lower_quantile)
 else:
     trainer.predictor.calibrate(cal_loader)
 del cal_loader
