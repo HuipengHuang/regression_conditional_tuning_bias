@@ -62,8 +62,12 @@ class Predictor:
             total_prediction_set_size = 0
             instance_coverage_gap = 0
             rank_counts = torch.zeros(size=(100,), device=self.device)
+            total_samples = 0
+
             for data, target in test_loader:
                 data, target = data.to(self.device), target.to(self.device)
+                batch_size = target.shape[0]
+                total_samples += batch_size
 
                 logit = self.combined_net(data)
                 prob = torch.softmax(logit, dim=-1)
@@ -76,23 +80,26 @@ class Predictor:
                     rank_counts[rank - 1] += 1
 
                 batch_score = self.score_function(prob)
-                prediction_set = (batch_score <= self.threshold).to(torch.int) *  (batch_score >= self.lower_threshold).to(torch.int)
-
-                target_prediction_set = prediction_set[torch.arange(target.shape[0]), target]
+                prediction_set = (batch_score <= self.threshold).to(torch.int) * (
+                            batch_score >= self.lower_threshold).to(torch.int)
+                target_prediction_set = prediction_set[torch.arange(batch_size), target]
                 total_coverage += target_prediction_set.sum().item()
                 total_prediction_set_size += prediction_set.sum().item()
                 instance_coverage_gap += torch.sum(torch.abs((target_prediction_set - (1 - self.alpha))))
-            rank_probs = rank_counts / len(test_loader.dataset)
-            accuracy = total_accuracy / len(test_loader.dataset)
-            coverage = total_coverage / len(test_loader.dataset)
-            avg_set_size = total_prediction_set_size / len(test_loader.dataset)
-            instance_coverage_gap = instance_coverage_gap / len(test_loader.dataset)
 
-            result_dict = {f"{self.args.score}_Top1Accuracy": accuracy,
-                           f"{self.args.score}_AverageSetSize": avg_set_size,
-                           f"{self.args.score}_Coverage": coverage,
-                           f"{self.args.score}_instance_coverage_gap": instance_coverage_gap}
-            print("rrank prob")
+            rank_probs = rank_counts / total_samples
+            accuracy = total_accuracy / total_samples
+            coverage = total_coverage / total_samples
+            avg_set_size = total_prediction_set_size / total_samples
+            instance_coverage_gap = instance_coverage_gap / total_samples
+
+            result_dict = {
+                f"{self.args.score}_Top1Accuracy": accuracy,
+                f"{self.args.score}_AverageSetSize": avg_set_size,
+                f"{self.args.score}_Coverage": coverage,
+                f"{self.args.score}_instance_coverage_gap": instance_coverage_gap,
+            }
+            print("rank prob")
             print(rank_probs)
             return result_dict
 
