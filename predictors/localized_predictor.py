@@ -112,8 +112,8 @@ class LocalizedPredictor:
         theta_A1 = torch.cat([torch.tensor([0], device=self.device), theta_A1], dim=0)
         theta_A2 = torch.cat([torch.tensor([0], device=self.device), theta_A2], dim=0)
         theta_A3 = torch.cat([torch.tensor([0], device=self.device), theta_A3], dim=0)
+        c1, c2, c3 = 0, 0, 0
         for k in range(1, n + 2):
-            c1, c2, c3 = 0, 0, 0
             while c1 < L1 and theta_A1[c1+1] < theta_hat[k]:
                 c1 += 1
             while c2 < L2 and theta_A2[c2+1] < theta_hat[k]:
