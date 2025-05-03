@@ -190,7 +190,7 @@ class LocalizedPredictor:
         """print(a2_counts)
         print(a2_comps.sum(dim=1))
         print(theta_A2, L2, theta_hat)"""
-        print(torch.sum(theta_hat))
+        print(theta_hat)
         print("---")
 
         threshold = self.v_hat[optimal_k]
