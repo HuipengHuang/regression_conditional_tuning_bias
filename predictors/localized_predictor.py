@@ -107,7 +107,7 @@ class LocalizedPredictor:
         L1, L2, L3 = theta_A1.shape[0], theta_A2.shape[0], theta_A3.shape[0]
 
         S_k = [0,]
-        c_1 = []
+        c_1 = [0,]
         theta_hat = torch.cat([torch.tensor([0], device=self.device), theta_hat], dim=0)
         theta_A1 = torch.cat([torch.tensor([0], device=self.device), theta_A1], dim=0)
         theta_A2 = torch.cat([torch.tensor([0], device=self.device), theta_A2], dim=0)
@@ -124,7 +124,6 @@ class LocalizedPredictor:
             c_1.append(c2)
         S_k = torch.tensor(S_k, device=self.device) / (n + 1)
         optimal_k = S_k[S_k < (1 - alpha)].shape[0] - 1
-        print(L1, L2, L3)
         print(torch.tensor(c_1))
 
         threshold = self.v_hat[optimal_k]
@@ -190,7 +189,6 @@ class LocalizedPredictor:
         optimal_k = S_k[S_k < (1 - alpha)].shape[0] - 1
         print(a2_counts)
         print(a2_comps.sum(dim=1))
-        print(L1,L2,L3)
         print("---")
 
         threshold = self.v_hat[optimal_k]
