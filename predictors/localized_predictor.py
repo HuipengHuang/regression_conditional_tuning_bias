@@ -127,7 +127,6 @@ class LocalizedPredictor:
         a3_counts = torch.minimum(a3_comps.sum(dim=1), torch.tensor(L3, device=self.device))
 
         S_k = (a1_counts + a2_counts + a3_counts) / (n + 1)
-        print(S_k)
 
         optimal_k = S_k[S_k < (1 - alpha)].shape[0] - 1
 
@@ -140,81 +139,6 @@ class LocalizedPredictor:
 
         return prediction_set_size, coverage, acc
 
-    def calibrate_instance1(self, data, target, alpha):
-        # Forward pass
-        data = data.unsqueeze(dim=0)
-        logits = self.combined_net(data)
-        test_feature = self.combined_net.get_features(data)
-        self.get_weight(test_feature)
-
-        n = self.cal_score.shape[0]
-
-        # Correct dimension extraction
-        # Q_diag gets Q[1,0], Q[2,1], ..., Q[n,n-1] → size n
-        Q_diag = torch.diagonal(self.Q[1:n + 1, :n], offset=-1)
-
-        # Q_rowsum gets Q[1,n], Q[2,n], ..., Q[n+1,n] → size n+1
-        Q_rowsum = self.Q[1:n + 2, n]
-
-        # H_lastcol gets H[1,n+1], H[2,n+1], ..., H[n+1,n+1] → size n+1
-        H_lastcol = self.H[1:n + 2, n + 1]
-
-        # Compute theta values with proper dimension matching
-        # theta_p and theta should both be size n (matching Q_diag)
-        theta_p = (Q_diag + H_lastcol[:n]) / (Q_rowsum[:n] + H_lastcol[:n])
-        theta = Q_diag / (Q_rowsum[:n] + H_lastcol[:n])
-
-        # theta_hat should be size n (matching Q_diag)
-        theta_hat = self.Q[n + 1, :n] / self.H[n + 1, :n].sum()
-
-        # Now all masks will work since theta_p, theta, theta_hat are same size
-        mask_A1 = theta_p < theta_hat
-        mask_A2 = theta_hat <= theta
-        mask_A3 = (~mask_A1) & (~mask_A2)
-
-        # Prepare sorted arrays with lengths
-        theta_A1 = theta_p[mask_A1]
-        theta_A2 = theta[mask_A2]
-        theta_A3 = torch.where(mask_A3)[0] + 1  # +1 for 1-based indexing
-        L1, L2, L3 = len(theta_A1), len(theta_A2), len(theta_A3)
-
-        # Prepend 0 to all arrays
-        zero = torch.tensor([0], device=self.device)
-        theta_hat = torch.cat([zero, theta_hat])
-        theta_A1 = torch.cat([zero, theta_A1])
-        theta_A2 = torch.cat([zero, theta_A2])
-        theta_A3 = torch.cat([zero, theta_A3.float()])
-
-        # Vectorized counting
-        k_range = torch.arange(n + 2, device=self.device)
-
-        # A1 counts
-        a1_comps = theta_A1.unsqueeze(0) < theta_hat[k_range].unsqueeze(1)
-        a1_counts = torch.minimum(a1_comps.sum(dim=1), torch.tensor(L1, device=self.device))
-
-        # A2 counts
-        a2_comps = theta_A2.unsqueeze(0) < theta_hat[k_range].unsqueeze(1)
-        a2_counts = torch.minimum(a2_comps.sum(dim=1), torch.tensor(L2, device=self.device))
-
-        # A3 counts
-        a3_comps = theta_A3.unsqueeze(0) < (k_range.unsqueeze(1) - 1)
-        a3_counts = torch.minimum(a3_comps.sum(dim=1), torch.tensor(L3, device=self.device))
-
-        S_k = (a1_counts + a2_counts + a3_counts) / (n + 1)
-
-        # Find optimal_k
-        valid_mask = S_k < (1 - alpha)
-        optimal_k = torch.where(valid_mask)[0][-1].item() if valid_mask.any() else 0
-
-        # Final computations
-        threshold = self.v_hat[optimal_k]
-        prob = torch.softmax(logits, dim=-1)
-        acc = (torch.argmax(prob) == target).int()
-        score = self.score_function(prob)[0]
-        prediction_set_size = (score <= threshold).sum().item()
-        coverage = int(score[target] <= threshold)
-
-        return prediction_set_size, coverage, acc
 
 
     def calibrate(self, cal_loader, alpha=None):
