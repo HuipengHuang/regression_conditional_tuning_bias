@@ -61,7 +61,7 @@ class Predictor:
             total_coverage = 0
             total_prediction_set_size = 0
             instance_coverage_gap = 0
-
+            rank_counts = torch.zeros(size=(100,), device=self.device)
             for data, target in test_loader:
                 data, target = data.to(self.device), target.to(self.device)
 
@@ -70,6 +70,11 @@ class Predictor:
                 prediction = torch.argmax(prob, dim=-1)
                 total_accuracy += (prediction == target).sum().item()
 
+                sorted_indices = torch.argsort(prob, dim=1, descending=True)
+                ranks = (sorted_indices == target.unsqueeze(1)).nonzero()[:, 1] + 1
+                for rank in ranks:
+                    rank_counts[rank - 1] += 1
+
                 batch_score = self.score_function(prob)
                 prediction_set = (batch_score <= self.threshold).to(torch.int) *  (batch_score >= self.lower_threshold).to(torch.int)
 
@@ -77,14 +82,18 @@ class Predictor:
                 total_coverage += target_prediction_set.sum().item()
                 total_prediction_set_size += prediction_set.sum().item()
                 instance_coverage_gap += torch.sum(torch.abs((target_prediction_set - (1 - self.alpha))))
+                rank_probs = rank_counts / len(test_loader.dataset)
 
             accuracy = total_accuracy / len(test_loader.dataset)
             coverage = total_coverage / len(test_loader.dataset)
             avg_set_size = total_prediction_set_size / len(test_loader.dataset)
             instance_coverage_gap = instance_coverage_gap / len(test_loader.dataset)
+
             result_dict = {f"{self.args.score}_Top1Accuracy": accuracy,
                            f"{self.args.score}_AverageSetSize": avg_set_size,
                            f"{self.args.score}_Coverage": coverage,
                            f"{self.args.score}_instance_coverage_gap": instance_coverage_gap}
+            print("rrank prob")
+            print(rank_probs)
             return result_dict
 
