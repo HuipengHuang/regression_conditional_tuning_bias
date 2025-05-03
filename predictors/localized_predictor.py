@@ -175,9 +175,11 @@ class LocalizedPredictor:
 
         # A1 counts
         a1_comps = theta_A1.unsqueeze(0) < theta_hat[k_range].unsqueeze(1)
+        a1_comps = torch.maximum(a1_comps, torch.tensor([0], device=self.device))
         a1_counts = torch.minimum(a1_comps.sum(dim=1), torch.tensor(L1, device=self.device))
 
         a2_comps = theta_A2.unsqueeze(0) < theta_hat[k_range].unsqueeze(1)
+        a2_comps = torch.maximum(a2_comps, torch.tensor([0], device=self.device))
         a2_counts = torch.minimum(a2_comps.sum(dim=1), torch.tensor(L2, device=self.device))
 
         # A3 counts
