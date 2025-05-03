@@ -71,7 +71,7 @@ class Predictor:
                 total_accuracy += (prediction == target).sum().item()
 
                 batch_score = self.score_function(prob)
-                prediction_set = (batch_score <= self.threshold and batch_score >= self.lower_threshold).to(torch.int)
+                prediction_set = (batch_score <= self.threshold & batch_score >= self.lower_threshold).to(torch.int)
 
                 target_prediction_set = prediction_set[torch.arange(target.shape[0]), target]
                 total_coverage += target_prediction_set.sum().item()
