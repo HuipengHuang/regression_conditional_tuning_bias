@@ -124,6 +124,7 @@ class LocalizedPredictor:
             c_1.append(c2)
         S_k = torch.tensor(S_k, device=self.device) / (n + 1)
         optimal_k = S_k[S_k < (1 - alpha)].shape[0] - 1
+        print(L1, L2, L3)
         print(torch.tensor(c_1))
 
         threshold = self.v_hat[optimal_k]
