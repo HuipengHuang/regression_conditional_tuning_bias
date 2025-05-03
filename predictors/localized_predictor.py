@@ -187,9 +187,10 @@ class LocalizedPredictor:
         S_k = (a1_counts + a2_counts + a3_counts) / (n + 1)
 
         optimal_k = S_k[S_k < (1 - alpha)].shape[0] - 1
-        print(a2_counts)
+        """print(a2_counts)
         print(a2_comps.sum(dim=1))
-        print(theta_A2, L2, theta_hat)
+        print(theta_A2, L2, theta_hat)"""
+        print(torch.sum(theta_hat))
         print("---")
 
         threshold = self.v_hat[optimal_k]
