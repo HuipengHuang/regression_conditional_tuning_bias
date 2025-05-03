@@ -82,8 +82,7 @@ class Predictor:
                 total_coverage += target_prediction_set.sum().item()
                 total_prediction_set_size += prediction_set.sum().item()
                 instance_coverage_gap += torch.sum(torch.abs((target_prediction_set - (1 - self.alpha))))
-                rank_probs = rank_counts / len(test_loader.dataset)
-
+            rank_probs = rank_counts / len(test_loader.dataset)
             accuracy = total_accuracy / len(test_loader.dataset)
             coverage = total_coverage / len(test_loader.dataset)
             avg_set_size = total_prediction_set_size / len(test_loader.dataset)
