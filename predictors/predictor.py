@@ -40,7 +40,7 @@ class Predictor:
             threshold = torch.quantile(cal_score, math.ceil((1 - alpha + q) * (N + 1)) / N, dim=0)
             self.threshold = threshold
             if q != 0:
-                self.lower_threshold = torch.quantile(cal_score, math.ceil((q) * (N + 1)) / N, dim=0)
+                self.lower_threshold = torch.quantile(cal_score, q, dim=0)
             return threshold
 
     def calibrate_batch_logit(self, logits, target, alpha):
