@@ -142,23 +142,25 @@ class LocalizedPredictor:
 
         n = self.cal_score.shape[0]
 
-        # Corrected indexing - note the different ranges
-        diag_indices = torch.arange(1, n + 1, device=self.device)  # Q[i,i-1] for i=1..n
-        row_indices = torch.arange(1, n + 2, device=self.device)  # Q[i,n] for i=1..n+1
+        # Correct dimension extraction
+        # Q_diag gets Q[1,0], Q[2,1], ..., Q[n,n-1] → size n
+        Q_diag = torch.diagonal(self.Q[1:n + 1, :n], offset=-1)
 
-        # Extract values with proper dimensions
-        Q_diag = self.Q[diag_indices, diag_indices - 1]  # shape (n,)
-        Q_rowsum = self.Q[row_indices, n]  # shape (n+1,)
-        H_lastcol = self.H[row_indices, n + 1]  # shape (n+1,)
+        # Q_rowsum gets Q[1,n], Q[2,n], ..., Q[n+1,n] → size n+1
+        Q_rowsum = self.Q[1:n + 2, n]
 
-        # Compute theta values with proper broadcasting
-        # For theta_p and theta, we need to align Q_diag (n) with H_lastcol (n+1)
-        # According to original logic, we should use H_lastcol[1..n] for Q_diag
-        theta_p = (Q_diag + H_lastcol[:-1]) / (Q_rowsum[:-1] + H_lastcol[:-1])
-        theta = Q_diag / (Q_rowsum[:-1] + H_lastcol[:-1])
-        theta_hat = self.Q[n + 1, :n + 1] / self.H[n + 1, :n + 1].sum()
+        # H_lastcol gets H[1,n+1], H[2,n+1], ..., H[n+1,n+1] → size n+1
+        H_lastcol = self.H[1:n + 2, n + 1]
 
-        # Masks
+        # Compute theta values with proper dimension matching
+        # theta_p and theta should both be size n (matching Q_diag)
+        theta_p = (Q_diag + H_lastcol[:n]) / (Q_rowsum[:n] + H_lastcol[:n])
+        theta = Q_diag / (Q_rowsum[:n] + H_lastcol[:n])
+
+        # theta_hat should be size n (matching Q_diag)
+        theta_hat = self.Q[n + 1, :n] / self.H[n + 1, :n].sum()
+
+        # Now all masks will work since theta_p, theta, theta_hat are same size
         mask_A1 = theta_p < theta_hat
         mask_A2 = theta_hat <= theta
         mask_A3 = (~mask_A1) & (~mask_A2)
@@ -166,7 +168,7 @@ class LocalizedPredictor:
         # Prepare sorted arrays with lengths
         theta_A1 = theta_p[mask_A1]
         theta_A2 = theta[mask_A2]
-        theta_A3 = torch.where(mask_A3)[0] + 1  # +1 to match original 1-based indexing
+        theta_A3 = torch.where(mask_A3)[0] + 1  # +1 for 1-based indexing
         L1, L2, L3 = len(theta_A1), len(theta_A2), len(theta_A3)
 
         # Prepend 0 to all arrays
@@ -174,22 +176,22 @@ class LocalizedPredictor:
         theta_hat = torch.cat([zero, theta_hat])
         theta_A1 = torch.cat([zero, theta_A1])
         theta_A2 = torch.cat([zero, theta_A2])
-        theta_A3 = torch.cat([zero, theta_A3.float()])  # ensure same dtype
+        theta_A3 = torch.cat([zero, theta_A3.float()])
 
-        # Vectorized counting with boundary checks
+        # Vectorized counting
         k_range = torch.arange(n + 2, device=self.device)
 
-        # For A1: count where theta_A1 < theta_hat[k] and c1 < L1
-        a1_comparisons = theta_A1.unsqueeze(0) < theta_hat[k_range].unsqueeze(1)
-        a1_counts = torch.minimum(a1_comparisons.sum(dim=1), torch.tensor(L1, device=self.device))
+        # A1 counts
+        a1_comps = theta_A1.unsqueeze(0) < theta_hat[k_range].unsqueeze(1)
+        a1_counts = torch.minimum(a1_comps.sum(dim=1), torch.tensor(L1, device=self.device))
 
-        # For A2: count where theta_A2 < theta_hat[k] and c2 < L2
-        a2_comparisons = theta_A2.unsqueeze(0) < theta_hat[k_range].unsqueeze(1)
-        a2_counts = torch.minimum(a2_comparisons.sum(dim=1), torch.tensor(L2, device=self.device))
+        # A2 counts
+        a2_comps = theta_A2.unsqueeze(0) < theta_hat[k_range].unsqueeze(1)
+        a2_counts = torch.minimum(a2_comps.sum(dim=1), torch.tensor(L2, device=self.device))
 
-        # For A3: count where theta_A3 < k and c3 < L3
-        a3_comparisons = theta_A3.unsqueeze(0) < k_range.unsqueeze(1)
-        a3_counts = torch.minimum(a3_comparisons.sum(dim=1), torch.tensor(L3, device=self.device))
+        # A3 counts
+        a3_comps = theta_A3.unsqueeze(0) < (k_range.unsqueeze(1) - 1)
+        a3_counts = torch.minimum(a3_comps.sum(dim=1), torch.tensor(L3, device=self.device))
 
         S_k = (a1_counts + a2_counts + a3_counts) / (n + 1)
 
