@@ -113,7 +113,6 @@ class LocalizedPredictor:
         theta_A3 = torch.cat([torch.tensor([0], device=self.device), theta_A3], dim=0)
         for k in range(1, n + 2):
             c1, c2, c3 = 0, 0, 0
-            print(k)
             while c1 < L1 and theta_A1[c1+1] < theta_hat[k]:
                 c1 += 1
             while c2 < L2 and theta_A2[c2+1] < theta_hat[k]:
@@ -131,6 +130,86 @@ class LocalizedPredictor:
         score = self.score_function(prob)[0]
         prediction_set_size = torch.sum(score <= threshold).item()
         coverage = 1 if score[target] < threshold else 0
+
+        return prediction_set_size, coverage, acc
+
+    def calibrate_instance1(self, data, target, alpha):
+        # Forward pass
+        data = data.unsqueeze(dim=0)
+        logits = self.combined_net(data)
+        test_feature = self.combined_net.get_features(data)
+        self.get_weight(test_feature)
+
+        n = self.cal_score.shape[0]
+
+        # Precompute indices
+        diag_indices = torch.arange(1, n + 1, device=self.device)
+        last_col_indices = torch.arange(1, n + 2, device=self.device)
+
+        # Vectorized computations
+        Q_diag = self.Q[diag_indices, diag_indices - 1]
+        Q_rowsum = self.Q[last_col_indices, n]
+        H_lastcol = self.H[last_col_indices, n + 1]
+
+        theta_p = (Q_diag + H_lastcol) / (Q_rowsum + H_lastcol)
+        theta = Q_diag / (Q_rowsum + H_lastcol)
+        theta_hat = self.Q[n + 1, :n + 1] / self.H[n + 1, :n + 1].sum()
+
+        # Masks
+        mask_A1 = theta_p < theta_hat
+        mask_A2 = theta_hat <= theta
+        mask_A3 = (~mask_A1) & (~mask_A2)
+
+        # Prepare sorted arrays with lengths
+        theta_A1 = theta_p[mask_A1]
+        theta_A2 = theta[mask_A2]
+        theta_A3 = torch.where(mask_A3)[0] + 1
+        L1, L2, L3 = len(theta_A1), len(theta_A2), len(theta_A3)
+
+        # Prepend 0
+        zero = torch.tensor([0], device=self.device)
+        theta_hat = torch.cat([zero, theta_hat])
+        theta_A1 = torch.cat([zero, theta_A1])
+        theta_A2 = torch.cat([zero, theta_A2])
+        theta_A3 = torch.cat([zero, theta_A3.float()])
+
+        # Vectorized counting with boundary checks
+        k_range = torch.arange(n + 2, device=self.device)
+
+        # For A1: count where theta_A1 < theta_hat[k] and c1 < L1
+        a1_comparisons = theta_A1.unsqueeze(0) < theta_hat[k_range].unsqueeze(1)
+        a1_counts = torch.minimum(
+            a1_comparisons.sum(dim=1),
+            torch.tensor(L1, device=self.device)
+        )
+
+        # For A2: count where theta_A2 < theta_hat[k] and c2 < L2
+        a2_comparisons = theta_A2.unsqueeze(0) < theta_hat[k_range].unsqueeze(1)
+        a2_counts = torch.minimum(
+            a2_comparisons.sum(dim=1),
+            torch.tensor(L2, device=self.device)
+        )
+
+        # For A3: count where theta_A3 < k and c3 < L3
+        a3_comparisons = theta_A3.unsqueeze(0) < k_range.unsqueeze(1)
+        a3_counts = torch.minimum(
+            a3_comparisons.sum(dim=1),
+            torch.tensor(L3, device=self.device)
+        )
+
+        S_k = (a1_counts + a2_counts + a3_counts) / (n + 1)
+
+        # Find optimal_k
+        valid_mask = S_k < (1 - alpha)
+        optimal_k = torch.where(valid_mask)[0][-1].item() if valid_mask.any() else 0
+
+        # Final computations
+        threshold = self.v_hat[optimal_k]
+        prob = torch.softmax(logits, dim=-1)
+        acc = (torch.argmax(prob) == target).int()
+        score = self.score_function(prob)[0]
+        prediction_set_size = (score <= threshold).sum().item()
+        coverage = int(score[target] <= threshold)
 
         return prediction_set_size, coverage, acc
 
@@ -157,6 +236,7 @@ class LocalizedPredictor:
                 target = target.to(self.device)
                 for i in range(data.shape[0]):
                     prediction_set_size, coverage, acc = self.calibrate_instance(data[i], target[i], alpha=self.alpha)
+                    print(self.calibrate_instance(data[i], target[i], alpha=self.alpha)==self.calibrate_instance1(data[i], target[i], alpha=self.alpha))
                     total_set_size += prediction_set_size
                     total_coverage += coverage
                     total_accuracy += acc
