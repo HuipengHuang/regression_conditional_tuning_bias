@@ -16,8 +16,9 @@ class Predictor:
         self.alpha = args.alpha
         self.device = next(net.parameters()).device
         self.args = args
+        self.lower_threshold = 0
 
-    def calibrate(self, cal_loader, alpha=None):
+    def calibrate(self, cal_loader, q=0, alpha=None):
         """ Input calibration dataloader.
             Compute scores for all the calibration data and take the (1 - alpha) quantile."""
         self.combined_net.eval()
@@ -36,8 +37,10 @@ class Predictor:
 
                 cal_score = torch.cat((cal_score, batch_score), 0)
             N = cal_score.shape[0]
-            threshold = torch.quantile(cal_score, math.ceil((1 - alpha) * (N + 1)) / N, dim=0)
+            threshold = torch.quantile(cal_score, math.ceil((1 - alpha + q) * (N + 1)) / N, dim=0)
             self.threshold = threshold
+            if q != 0:
+                self.lower_threshold = torch.quantile(cal_score, math.ceil((q) * (N + 1)) / N, dim=0)
             return threshold
 
     def calibrate_batch_logit(self, logits, target, alpha):
@@ -68,7 +71,7 @@ class Predictor:
                 total_accuracy += (prediction == target).sum().item()
 
                 batch_score = self.score_function(prob)
-                prediction_set = (batch_score <= self.threshold).to(torch.int)
+                prediction_set = (batch_score <= self.threshold and batch_score >= self.lower_threshold).to(torch.int)
 
                 target_prediction_set = prediction_set[torch.arange(target.shape[0]), target]
                 total_coverage += target_prediction_set.sum().item()

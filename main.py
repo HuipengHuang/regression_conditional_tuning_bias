@@ -18,6 +18,7 @@ parser.add_argument("--algorithm",'-alg', default="standard", choices=["standard
 parser.add_argument("--load", default="False", type=str, choices=["True", "False"])
 parser.add_argument("--predictor", default=None, type=str, choices=["local"])
 parser.add_argument("--save_model", default=None, type=str, choices=["True", "False"])
+parser.add_argument("--lower_quantile", default=None, type=float)
 
 #  Training configuration
 parser.add_argument("--optimizer", type=str, default="sgd", choices=["sgd", "adam"], help="Choose optimizer.")
@@ -82,8 +83,12 @@ if args.loss == "conftr" :
 
 del train_loader
 del train_dataset
+if args.lower_quantile is not None:
+    trainer.predictor.calibrate(cal_loader, args.lower_quantile)
+else:
+    trainer.predictor.calibrate(cal_loader)
+del cal_loader
 
-trainer.predictor.calibrate(cal_loader)
 result_dict = trainer.predictor.evaluate(test_loader)
 
 for key, value in result_dict.items():
