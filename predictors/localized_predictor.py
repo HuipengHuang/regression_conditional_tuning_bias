@@ -147,9 +147,9 @@ class LocalizedPredictor:
         last_col_indices = torch.arange(1, n + 2, device=self.device)
 
         # Vectorized computations
-        Q_diag = self.Q[diag_indices, diag_indices - 1]
-        Q_rowsum = self.Q[last_col_indices, n]
-        H_lastcol = self.H[last_col_indices, n + 1]
+        Q_diag = torch.diagonal(self.Q, offset=-1)  # Q[i,i-1] for i=1..n+1
+        Q_rowsum = self.Q[1:n + 2, n]  # Q[i,n] for i=1..n+1
+        H_lastcol = self.H[1:n + 2, n + 1]  # H[i,n+1] for i=1..n+1
 
         theta_p = (Q_diag + H_lastcol) / (Q_rowsum + H_lastcol)
         theta = Q_diag / (Q_rowsum + H_lastcol)
