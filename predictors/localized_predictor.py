@@ -239,7 +239,6 @@ class LocalizedPredictor:
                 target = target.to(self.device)
                 for i in range(data.shape[0]):
                     prediction_set_size, coverage, acc = self.calibrate_instance(data[i], target[i], alpha=self.alpha)
-                    print(self.calibrate_instance(data[i], target[i], alpha=self.alpha)==self.calibrate_instance1(data[i], target[i], alpha=self.alpha))
                     total_set_size += prediction_set_size
                     total_coverage += coverage
                     total_accuracy += acc
