@@ -108,6 +108,7 @@ class LocalizedPredictor:
 
         S_k = [0,]
         c_1 = [0,]
+        c_2 = [0,]
         theta_hat = torch.cat([torch.tensor([0], device=self.device), theta_hat], dim=0)
         theta_A1 = torch.cat([torch.tensor([0], device=self.device), theta_A1], dim=0)
         theta_A2 = torch.cat([torch.tensor([0], device=self.device), theta_A2], dim=0)
@@ -121,10 +122,12 @@ class LocalizedPredictor:
             while c3 < L3 and theta_A3[c3+1] < k - 1:
                 c3 += 1
             S_k.append((c1 + c2 + c3))
-            c_1.append(c2)
+            c_1.append(c1)
+            c_2.append(c2)
         S_k = torch.tensor(S_k, device=self.device) / (n + 1)
         optimal_k = S_k[S_k < (1 - alpha)].shape[0] - 1
         print(torch.tensor(c_1))
+        print(torch.tensor(c_2))
 
         threshold = self.v_hat[optimal_k]
         prob = torch.softmax(logits, dim=-1)
@@ -175,11 +178,11 @@ class LocalizedPredictor:
 
         # A1 counts
         a1_comps = theta_A1.unsqueeze(0) < theta_hat[k_range].unsqueeze(1)
-        a1_comps = torch.maximum(a1_comps, torch.tensor([0], device=self.device))
+        a1_comps = torch.maximum(a1_comps - 1, torch.tensor([0], device=self.device))
         a1_counts = torch.minimum(a1_comps.sum(dim=1), torch.tensor(L1, device=self.device))
 
         a2_comps = theta_A2.unsqueeze(0) < theta_hat[k_range].unsqueeze(1)
-        a2_comps = torch.maximum(a2_comps, torch.tensor([0], device=self.device))
+        a2_comps = torch.maximum(a2_comps - 1, torch.tensor([0], device=self.device))
         a2_counts = torch.minimum(a2_comps.sum(dim=1), torch.tensor(L2, device=self.device))
 
         # A3 counts
@@ -189,9 +192,8 @@ class LocalizedPredictor:
         S_k = (a1_counts + a2_counts + a3_counts) / (n + 1)
 
         optimal_k = S_k[S_k < (1 - alpha)].shape[0] - 1
+        print(a1_counts)
         print(a2_counts)
-        print(a2_comps.sum(dim=1))
-        print(theta_A2, L2, theta_hat)
         print("---")
 
         threshold = self.v_hat[optimal_k]
