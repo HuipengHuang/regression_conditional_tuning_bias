@@ -140,7 +140,6 @@ class LocalizedPredictor:
         score = self.score_function(prob)[0]
         prediction_set_size = torch.sum(score <= threshold).item()
         coverage = 1 if score[target] < threshold else 0
-        print(theta_hat)
         return prediction_set_size, coverage, acc
 
 
