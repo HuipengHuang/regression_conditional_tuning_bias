@@ -90,7 +90,7 @@ class Predictor:
             coverage = total_coverage / total_samples
             avg_set_size = total_prediction_set_size / total_samples
             coverage_gap = np.array(class_coverage) / np.array(class_size)
-            coverage_gap = np.sum(np.abs(coverage_gap - (1 - self.alpha)))
+            coverage_gap = np.sum(np.abs(coverage_gap - (1 - self.alpha))) / 100
             result_dict = {
                 f"{self.args.score}_Top1Accuracy": accuracy,
                 f"{self.args.score}_AverageSetSize": avg_set_size,
