@@ -1,5 +1,7 @@
 import math
 
+import numpy as np
+
 from scores.utils import get_score
 import torch
 import torch.nn as nn
@@ -158,8 +160,8 @@ class LocalizedPredictor:
             total_accuracy = 0
             total_coverage = 0
             total_set_size = 0
-            instance_coverage_gap = 0
-
+            class_coverage = [0 for _ in range(100)]
+            class_size = [0 for _ in range(100)]
             for data, target in test_loader:
                 data = data.to(self.device)
                 target = target.to(self.device)
@@ -168,18 +170,20 @@ class LocalizedPredictor:
                     total_set_size += prediction_set_size
                     total_coverage += coverage
                     total_accuracy += acc
-                    instance_coverage_gap += abs(coverage - (1 - self.alpha))
+                    class_coverage[target[i].item()] += coverage
+                    class_size += 1
             total_samples = len(test_loader.dataset)
             accuracy = total_accuracy / total_samples
             coverage = total_coverage / total_samples
             avg_set_size = total_set_size / total_samples
-            instance_coverage_gap = instance_coverage_gap / total_samples
+            class_coverage = np.array(class_coverage) / np.array(class_size)
+            coverage_gap = np.sum(np.abs(class_coverage - (1 - self.alpha)))
 
             return {
                 f"{self.args.score}_Top1Accuracy": accuracy,
                 f"{self.args.score}_Coverage": coverage,
                 f"{self.args.score}_AverageSetSize": avg_set_size,
-                f"{self.args.score}_instance_coverage_gap": instance_coverage_gap
+                f"{self.args.score}_coverage_gap": coverage_gap
             }
 
 
