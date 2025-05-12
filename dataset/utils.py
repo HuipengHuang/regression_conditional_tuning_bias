@@ -1,7 +1,7 @@
 import torchvision
 from torchvision.transforms import transforms
 from torch.utils.data import DataLoader, Subset, random_split
-from imb_ciafr import IMBALANCECIFAR10, IMBALANCECIFAR100
+from .imb_ciafr import IMBALANCECIFAR10, IMBALANCECIFAR100
 import torch
 
 def build_dataset(args):
