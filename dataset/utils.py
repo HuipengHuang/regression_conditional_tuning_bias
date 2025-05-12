@@ -34,8 +34,8 @@ def build_dataset(args):
                 transforms.ToTensor(),
                 transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
             ])
-            train_dataset = IMBALANCECIFAR100(root='/data/dataset', train=True, transform=train_transform)
-            cal_test_dataset = IMBALANCECIFAR100(root='/data/dataset', train=False, transform=val_transform)
+            train_dataset = IMBALANCECIFAR100(root='./data/dataset', train=True, transform=train_transform)
+            cal_test_dataset = IMBALANCECIFAR100(root='./data/dataset', train=False, transform=val_transform)
             num_class = 100
     elif dataset_name == "cifar10":
         from torchvision.datasets import CIFAR10
