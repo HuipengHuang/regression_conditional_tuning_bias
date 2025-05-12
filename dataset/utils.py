@@ -3,6 +3,8 @@ from torchvision.transforms import transforms
 from torch.utils.data import DataLoader, Subset, random_split
 from .imb_ciafr import IMBALANCECIFAR10, IMBALANCECIFAR100
 import torch
+from torchvision.datasets import CIFAR100
+from torchvision.datasets import CIFAR10
 
 def build_dataset(args):
     dataset_name = args.dataset
@@ -18,8 +20,10 @@ def build_dataset(args):
                 transforms.ToTensor(),
                 transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
             ])
-
-            train_dataset = IMBALANCECIFAR10(root='./data/dataset', train=True, transform=train_transform, download=True)
+            if args.train_imb == "True":
+                train_dataset = IMBALANCECIFAR10(root='./data/dataset', train=True, transform=train_transform, download=True)
+            else:
+                train_dataset = CIFAR100(root='./data/dataset', train=True, transform=train_transform, download=True)
             cal_test_dataset = IMBALANCECIFAR10(root='./data/dataset', train=False, transform=val_transform, download=True)
             num_class = 10
         elif dataset_name == "cifar100":
@@ -38,13 +42,11 @@ def build_dataset(args):
             cal_test_dataset = IMBALANCECIFAR100(root='./data/dataset', train=False, transform=val_transform)
             num_class = 100
     elif dataset_name == "cifar10":
-        from torchvision.datasets import CIFAR10
         num_class = 10
         train_dataset = CIFAR10(root='/data/dataset', train=True, download=False,transform=transforms.Compose([transforms.ToTensor()]))
         cal_test_dataset = CIFAR10(root='/data/dataset', train=False, download=False,
                                  transform=transforms.Compose([transforms.ToTensor()]))
     elif dataset_name == "cifar100":
-        from torchvision.datasets import CIFAR100
         num_class = 100
         train_transform = transforms.Compose([
             transforms.RandomCrop(32, padding=4),

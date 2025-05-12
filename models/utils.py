@@ -1,3 +1,5 @@
+import os
+
 import torch
 import torchvision.models as models
 from .resnet50 import ResNet50
@@ -5,7 +7,10 @@ from .resnet_cifar import resnet32
 def build_model(model_type, pretrained, num_classes, device, args):
     if args.imbalance == "True":
         if model_type == "resnet32":
-            return resnet32(num_classes=num_classes).to(device)
+            net = resnet32(num_classes=num_classes).to(device)
+            if args.load == "True":
+                load_model(args, net)
+            return net
         else:
             raise NotImplementedError("Other models are not implemented for imbalanced datasets")
     elif model_type == 'resnet18':
@@ -35,5 +40,30 @@ def build_model(model_type, pretrained, num_classes, device, args):
     if args.dataset == "cifar100":
         net.resnet.conv1 = torch.nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
         net.resnet.maxpool = torch.nn.Identity()
+    if args.load == "True":
+        load_model(args, net)
     return net.to(device)
+
+def load_model(args, net):
+        if args.imbalance == "True" and args.train_imb == "True":
+            p = f"./data/imbalance_{args.dataset}_{args.model}{0}net.pth"
+        else:
+            p = f"./data/{args.dataset}_{args.model}{0}net.pth"
+        if args.model == "resnet50":
+            net.resnet.load_state_dict(torch.load(p))
+        else:
+            net.load_state_dict(torch.load(p))
+
+def save_model(args, net):
+    i = 0
+    while (True):
+        if args.predictor == "local":
+            p = f"./data/local_{args.dataset}_{args.model}{i}net.pth"
+        else:
+            p = f"./data/{args.dataset}_{args.model}{i}net.pth"
+        if os.path.exists(p):
+            i += 1
+            continue
+        torch.save(net.state_dict(), p)
+        break
 

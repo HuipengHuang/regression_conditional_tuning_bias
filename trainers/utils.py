@@ -1,14 +1,11 @@
-from .trainer import Trainer
-from .uncertainty_aware_trainer import UncertaintyAwareTrainer
-from .weighted_trainer import WeightedTrainer
-from .new_weighted_trainer import NewWeightedTrainer
-def get_trainer(args, num_classes):
-    if args.new == "True":
-        trainer = NewWeightedTrainer(args, num_classes)
-    elif args.algorithm == "uatr":
-        trainer = UncertaintyAwareTrainer(args, num_classes)
-    elif args.score == "weight_score":
-        trainer = WeightedTrainer(args, num_classes)
+import torch
+def get_optimizer(args, net):
+    if args.optimizer == 'sgd':
+        optimizer = torch.optim.SGD(net.parameters(), lr=args.learning_rate, momentum=args.momentum,
+                                         weight_decay=args.weight_decay)
+    elif args.optimizer == 'adam':
+        optimizer = torch.optim.Adam(net.parameters(), lr=args.learning_rate, weight_decay=args.weight_decay)
     else:
-        trainer = Trainer(args, num_classes)
-    return trainer
+        raise NotImplementedError
+    return optimizer
+

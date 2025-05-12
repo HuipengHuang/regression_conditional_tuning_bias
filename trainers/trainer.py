@@ -1,14 +1,9 @@
-import os
-
 import torch
 from tqdm import tqdm
 import models
-from predictors import predictor
-from predictors import localized_predictor
 from loss.utils import get_loss_function
-from .adapter import Adapter
-
-
+from .utils import get_optimizer
+from predictors.utils import get_predictor_and_adapter
 class Trainer:
     """
     Trainer class that implement all the functions regarding training.
@@ -17,32 +12,13 @@ class Trainer:
         self.args = args
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.net = models.utils.build_model(args.model, (args.pretrained == "True"), num_classes=num_classes, device=self.device, args=args)
-        if args.load == "True":
-            if args.predictor == "local":
-                p = f"./data/{self.args.dataset}_{self.args.model}{0}net.pth"
-            else:
-                p = f"./data/{self.args.dataset}_{self.args.model}{0}net.pth"
-            if args.model == "resnet50":
-                self.net.resnet.load_state_dict(torch.load(p))
-            else:
-                self.net.load_state_dict(torch.load(p))
         self.batch_size = args.batch_size
-        if args.optimizer == 'sgd':
-            self.optimizer = torch.optim.SGD(self.net.parameters(), lr=args.learning_rate, momentum=args.momentum, weight_decay=args.weight_decay)
-        if args.optimizer == 'adam':
-            self.optimizer = torch.optim.Adam(self.net.parameters(), lr=args.learning_rate,weight_decay=args.weight_decay)
+
+        self.optimizer = get_optimizer(args, self.net)
 
         if args.adapter == "True":
-            self.adapter = Adapter(num_classes, self.device)
             self.set_train_mode((args.train_adapter == "True"), (args.train_net == "True"))
-            self.predictor = predictor.Predictor(args, self.net, self.adapter.adapter_net)
-        elif args.predictor == "local":
-            self.adapter = None
-            self.predictor = localized_predictor.LocalizedPredictor(args, self.net)
-        else:
-            self.adapter = None
-            self.predictor = predictor.Predictor(args, self.net)
-
+        self.predictor, self.adapter = get_predictor_and_adapter(args, num_classes, self.net, self.device)
 
         self.num_classes = num_classes
         self.loss_function = get_loss_function(args, self.predictor)
@@ -78,33 +54,17 @@ class Trainer:
 
     def train(self, data_loader, epochs):
         self.net.train()
-        if self.args.load == "False":
-            if self.adapter is None:
-                for epoch in range(epochs):
-                    self.train_epoch_without_adapter(data_loader, epoch)
-            else:
-                for epoch in range(epochs):
-                    self.train_epoch_with_adapter(data_loader)
 
-            i = 0
-            if self.args.save_model == "True":
-                while (True):
-                    if self.args.predictor == "local":
-                        p = f"./data/local_{self.args.dataset}_{self.args.model}{i}net.pth"
-                    else:
-                        p = f"./data/{self.args.dataset}_{self.args.model}{i}net.pth"
-                    if os.path.exists(p):
-                        i += 1
-                        continue
-                    torch.save(self.net.state_dict(), p)
-                    break
+        if self.adapter is None:
+            for epoch in range(epochs):
+                self.train_epoch_without_adapter(data_loader, epoch)
         else:
-            if self.adapter is None:
-                for epoch in range(epochs):
-                    self.train_epoch_without_adapter(data_loader, epoch)
-            else:
-                for epoch in range(epochs):
-                    self.train_epoch_with_adapter(data_loader)
+            for epoch in range(epochs):
+                self.train_epoch_with_adapter(data_loader)
+
+        if self.args.save_model == "True":
+            models.utils.save_model(self.args, self.net)
+
 
 
     def set_train_mode(self, train_adapter, train_net):
