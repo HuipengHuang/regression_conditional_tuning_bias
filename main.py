@@ -1,7 +1,8 @@
 import argparse
 from torch.utils.data import DataLoader
-from common.utils import build_dataset, set_seed, save_exp_result
+from common.utils import set_seed, save_exp_result
 from trainers.utils import get_trainer
+from dataset.utils import build_dataset
 from predictors import predictor
 
 parser = argparse.ArgumentParser()
