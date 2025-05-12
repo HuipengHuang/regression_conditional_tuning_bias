@@ -1,9 +1,14 @@
 import torch
 import torchvision.models as models
 from .resnet50 import ResNet50
-
+from .resnet_cifar import resnet32
 def build_model(model_type, pretrained, num_classes, device, args):
-    if model_type == 'resnet18':
+    if args.imbalance == "True":
+        if model_type == "resnet32":
+            return resnet32(num_classes=num_classes)
+        else:
+            raise NotImplementedError("Other models are not implemented for imbalanced datasets")
+    elif model_type == 'resnet18':
         net = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1 if pretrained else None)
     elif model_type == "resnet34":
         net = models.resnet34(weights=models.ResNet34_Weights.IMAGENET1K_V1 if pretrained else None)
@@ -22,14 +27,7 @@ def build_model(model_type, pretrained, num_classes, device, args):
     else:
         raise ValueError(f"Unsupported model type: {model_type}")
 
-    weight = (args.score == "weight_score")
-    if hasattr(net, "fc") and weight == "True":
-        #  ResNet and ResNeXt
-        net.fc = torch.nn.Identity()
-    elif hasattr(net, "classifier") and weight == "True":
-        #  DenseNet
-        net.classifier = torch.nn.Identity()
-    elif hasattr(net, "fc"):
+    if hasattr(net, "fc"):
         net.fc = torch.nn.Linear(net.fc.in_features, num_classes)
     else:
         if model_type != "resnet50":
