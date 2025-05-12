@@ -5,7 +5,7 @@ from .resnet_cifar import resnet32
 def build_model(model_type, pretrained, num_classes, device, args):
     if args.imbalance == "True":
         if model_type == "resnet32":
-            return resnet32(num_classes=num_classes)
+            return resnet32(num_classes=num_classes).to(device)
         else:
             raise NotImplementedError("Other models are not implemented for imbalanced datasets")
     elif model_type == 'resnet18':
