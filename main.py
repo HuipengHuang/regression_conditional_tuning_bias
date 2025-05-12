@@ -1,12 +1,13 @@
 import argparse
 from torch.utils.data import DataLoader
 from common.utils import set_seed, save_exp_result
-from trainers.utils import get_trainer
+from trainers.get_trainer import get_trainer
 from dataset.utils import build_dataset
 from predictors import predictor
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--imbalance", type=str, default=None)
+parser.add_argument("--train_imb", type=str, default=None)
 parser.add_argument("--new", type=str, default=None)
 parser.add_argument("--model", type=str, default="resnet50", help='Choose neural network architecture.')
 parser.add_argument("--dataset", type=str, default="cifar100", choices=["cifar10", "cifar100", "imagenet"],
