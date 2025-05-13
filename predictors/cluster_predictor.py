@@ -90,6 +90,7 @@ class ClusterPredictor:
                 mask = (cluster_targets == class_idx)
                 if mask.any():
                     scores = cluster_scores[mask]
+                    print(class_idx)
                     if len(scores) <= n_threshold:
                         class2cluster[class_idx] = self.k - 1
                         cluster2class[self.k - 1].append(class_idx)
@@ -97,11 +98,10 @@ class ClusterPredictor:
 
                     class_idx_list.append(class_idx)
                     class_quantile_score = torch.cat((class_quantile_score, torch.zeros(size=(1, len(T)), device=self.device)), dim=0)
-                    print(class_quantile_score)
                     for j, t in enumerate(T):
                         q = math.ceil(t * (len(scores) + 1)) / len(scores)
                         class_quantile_score[-1, j] = torch.quantile(scores, q)
-                        print(class_quantile_score.shape)
+
             class_quantiles_np = class_quantile_score.cpu().numpy()
             kmeans = KMeans(n_clusters=self.k - 1, random_state=0).fit(class_quantiles_np)
 
