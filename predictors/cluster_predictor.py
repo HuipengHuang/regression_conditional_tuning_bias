@@ -69,12 +69,12 @@ class ClusterPredictor:
             all_targets = torch.cat(all_targets)
             all_scores = torch.cat(all_scores)
 
-            if self.k is None:
-                num_per_class = torch.tensor([(all_targets==i).sum() for i in range(self.num_classes)])
-                n_min = min(num_per_class)
-                n_min = max(n_min, n_threshold)
-                num_remaining_classes = torch.sum(num_per_class >= n_min)
+            num_per_class = torch.tensor([(all_targets == i).sum() for i in range(self.num_classes)])
+            n_min = min(num_per_class)
+            n_min = max(n_min, n_threshold)
+            num_remaining_classes = torch.sum(num_per_class >= n_min)
 
+            if self.k is None:
                 n_clustering, self.k = get_clustering_parameters(num_remaining_classes, n_min)
 
                 cluster_scores, cal_scores = all_scores[:n_clustering], all_scores[n_clustering:]
@@ -87,25 +87,29 @@ class ClusterPredictor:
             class2cluster = {i: 0 for i in range(self.num_classes)}
             cluster2class = {i: [] for i in range(self.k)}
             class_quantile_score = torch.tensor([], device=self.device)
+            class_cts = []
             class_idx_list = []
             for class_idx in range(self.num_classes):
                 mask = (cluster_targets == class_idx)
 
                 scores = cluster_scores[mask]
                 if len(scores) <= n_threshold:
-                    class2cluster[class_idx] = self.k - 1
-                    cluster2class[self.k - 1].append(class_idx)
+                    class2cluster[class_idx] = self.k
+                    cluster2class[self.k].append(class_idx)
                     continue
 
                 class_idx_list.append(class_idx)
                 class_quantile_score = torch.cat((class_quantile_score, torch.zeros(size=(1, len(T)), device=self.device)), dim=0)
+                class_cts.append(scores.shape[0])
                 for j, t in enumerate(T):
                     q = math.ceil(t * (len(scores) + 1)) / len(scores)
                     class_quantile_score[-1, j] = torch.quantile(scores, q)
 
             class_quantiles_np = class_quantile_score.cpu().numpy()
-            kmeans = KMeans(n_clusters=self.k - 1, random_state=0).fit(class_quantiles_np)
+            class_cts = np.array([class_cts])
+            kmeans = KMeans(n_clusters=self.k, random_state=0, n_init=10).fit(class_quantiles_np, sample_weight=np.sqrt(class_cts))
 
+            print(kmeans.labels_)
             for idx, cluster_id in enumerate(kmeans.labels_):
                 class2cluster[class_idx_list[idx]] = cluster_id
                 cluster2class[cluster_id].append(class_idx_list[idx])
