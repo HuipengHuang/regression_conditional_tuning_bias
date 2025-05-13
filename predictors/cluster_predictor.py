@@ -80,6 +80,8 @@ class ClusterPredictor:
                 cluster_length = int(frac_clustering * all_targets.shape[0])
                 cluster_scores, cal_scores = all_scores[:cluster_length], all_scores[cluster_length:]
                 cluster_targets, cal_targets = all_targets[:cluster_length], all_targets[cluster_length:]
+                print("cluster length")
+                print(cluster_length, self.k)
             else:
                 cluster_length  = int(0.3 * len(cal_loader.dataset))
                 cluster_scores, cal_scores = all_scores[:cluster_length], all_scores[cluster_length:]
@@ -108,7 +110,7 @@ class ClusterPredictor:
 
             class_quantiles_np = class_quantile_score.cpu().numpy()
             class_cts = np.array(class_cts)
-            print(class_quantiles_np.shape, class_cts.shape)
+
             kmeans = KMeans(n_clusters=self.k, random_state=0, n_init=10).fit(class_quantiles_np, sample_weight=np.sqrt(class_cts))
 
             for idx, cluster_id in enumerate(kmeans.labels_):
