@@ -15,7 +15,7 @@ class ClusterPredictor:
         self.device = next(net.parameters()).device
         self.args = args
         self.k = int(args.k) if args.k is not None else None
-        self.num_classes = 0
+        self.num_classes = args.num_classes
         self.class_threshold = None
         self.class2cluster = None
         self.cluster2class = None
@@ -28,7 +28,6 @@ class ClusterPredictor:
         cluster_dataset, cal_dataset = split_dataloader(cal_loader)
         clustered_dataloader = DataLoader(cluster_dataset, batch_size=100, pin_memory=True)
         cal_loader = DataLoader(cal_dataset, batch_size=100, pin_memory=True)
-        self.num_classes = len(clustered_dataloader.dataset.dataset.classes)
 
         self.net.eval()
         with torch.no_grad():
