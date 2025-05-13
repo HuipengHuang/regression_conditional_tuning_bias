@@ -6,10 +6,9 @@ import torch.nn as nn
 import math
 
 
-class Predictor:
+class ClusterPredictor():
     def __init__(self, args, net):
         self.score_function = get_score(args)
-
         self.net = net
         self.threshold = None
         self.alpha = args.alpha

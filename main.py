@@ -6,9 +6,7 @@ from dataset.utils import build_dataset
 from predictors import predictor
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--imbalance", type=str, default=None)
-parser.add_argument("--train_imb", type=str, default=None)
-parser.add_argument("--new", type=str, default=None)
+
 parser.add_argument("--model", type=str, default="resnet50", help='Choose neural network architecture.')
 parser.add_argument("--dataset", type=str, default="cifar100", choices=["cifar10", "cifar100", "imagenet"],
                     help="Choose dataset for training.")
@@ -20,7 +18,6 @@ parser.add_argument("--algorithm",'-alg', default="standard", choices=["standard
 parser.add_argument("--load", default="False", type=str, choices=["True", "False"])
 parser.add_argument("--predictor", default=None, type=str, choices=["local"])
 parser.add_argument("--save_model", default=None, type=str, choices=["True", "False"])
-parser.add_argument("--lower_quantile", default=None, type=float)
 
 #  Training configuration
 parser.add_argument("--optimizer", type=str, default="sgd", choices=["sgd", "adam"], help="Choose optimizer.")
@@ -57,13 +54,6 @@ parser.add_argument("--mu", type=float, default=None,
 parser.add_argument("--mu_size", type=float, default=None,
                     help="Weight of train_loss_size in the uncertainty_aware_loss function")
 
-#  Hyperparameter for c-adapter
-parser.add_argument("--adapter", type=str, default="False", choices=["True", "False"],
-                    help="Add Adapter or not.")
-parser.add_argument("--train_net", type=str, default=None, choices=["True", "False"],
-                    help="Train the neural network or not.")
-parser.add_argument("--train_adapter", type=str, default=None, choices=["True", "False"],
-                    help="Train the adapter or not.")
 
 args = parser.parse_args()
 seed = args.seed
@@ -84,10 +74,8 @@ trainer.train(train_loader, args.epochs)
 
 del train_loader
 del train_dataset
-if args.lower_quantile is not None:
-    trainer.predictor.calibrate(cal_loader, q=args.lower_quantile)
-else:
-    trainer.predictor.calibrate(cal_loader)
+
+trainer.predictor.calibrate(cal_loader)
 del cal_loader
 
 result_dict = trainer.predictor.evaluate(test_loader)

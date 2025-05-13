@@ -18,7 +18,7 @@ def build_model(model_type, pretrained, num_classes, device, args):
     elif model_type == "resnet34":
         net = models.resnet34(weights=models.ResNet34_Weights.IMAGENET1K_V1 if pretrained else None)
     elif model_type == "resnet50":
-        net = ResNet50(pretrained=pretrained is not None, num_classes=num_classes)
+        net = models.resnet50(weights=models.ResNet50_Weights.IMAGENET1K_V1 if pretrained else None)
     elif model_type == "resnet101":
         net = models.resnet101(weights=models.ResNet101_Weights.IMAGENET1K_V1 if pretrained else None)
     elif model_type == "resnet152":
@@ -35,11 +35,8 @@ def build_model(model_type, pretrained, num_classes, device, args):
     if hasattr(net, "fc"):
         net.fc = torch.nn.Linear(net.fc.in_features, num_classes)
     else:
-        if model_type != "resnet50":
             net.classifier = torch.nn.Linear(net.classifier.in_features, num_classes)
-    if args.dataset == "cifar100":
-        net.resnet.conv1 = torch.nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, bias=False)
-        net.resnet.maxpool = torch.nn.Identity()
+
     if args.load == "True":
         load_model(args, net)
     return net.to(device)

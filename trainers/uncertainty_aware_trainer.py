@@ -29,7 +29,7 @@ class UncertaintyAwareTrainer(Trainer):
                     pred_data, pred_target = pred_batch
                     cal_data, cal_target = cal_batch
 
-                    self.train_batch_without_adapter(torch.cat((pred_data,cal_data), dim=0), torch.cat((pred_target,cal_target), dim=0))
+                    self.train_batch(torch.cat((pred_data, cal_data), dim=0), torch.cat((pred_target, cal_target), dim=0))
         else:
             for epoch in range(epochs):
                 pred_loader = DataLoader(pred_set, batch_size=self.batch_size, shuffle=True, drop_last=True)
