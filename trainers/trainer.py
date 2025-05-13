@@ -21,6 +21,9 @@ class Trainer:
         self.predictor, self.adapter = get_predictor_and_adapter(args, num_classes, self.net, self.device)
 
         self.num_classes = num_classes
+        if args.imbalance == "True":
+            per_cls_weights = None
+            cls_num_list = None
         self.loss_function = get_loss_function(args, self.predictor)
 
     def train_batch_without_adapter(self, data, target):
