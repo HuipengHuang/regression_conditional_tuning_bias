@@ -61,9 +61,7 @@ if seed:
     set_seed(seed)
 
 train_dataset, cal_dataset, test_dataset, num_classes = build_dataset(args)
-if args.imbalance == "True":
-    per_cls_weights = train_dataset.get_cls_weights()
-    cls_num_list = train_dataset.get_cls_num_list()
+
 train_loader = DataLoader(train_dataset, batch_size=args.batch_size, drop_last=True)
 cal_loader = DataLoader(cal_dataset, batch_size=args.batch_size)
 test_loader = DataLoader(test_dataset, batch_size=args.batch_size)
