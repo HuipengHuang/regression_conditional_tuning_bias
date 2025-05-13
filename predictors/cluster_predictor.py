@@ -61,8 +61,6 @@ class ClusterPredictor:
                 self.class_threshold[torch.tensor(self.cluster2class[i], device=self.device)] += cluster_quantile
 
     def cluster_class(self, clustered_dataloader, alpha):
-        class2cluster = {i: 0 for i in range(self.num_classes)}
-        cluster2class = {i: [] for i in range(self.k)}
         n_threshold = get_quantile_threshold(alpha if alpha < 0.1 else 0.1)
 
         T = [0.5, 0.6, 0.7, 0.8, 0.9]
@@ -91,6 +89,8 @@ class ClusterPredictor:
 
                 n_clustering, self.k = get_clustering_parameters(num_remaining_classes, n_min)
 
+            class2cluster = {i: 0 for i in range(self.num_classes)}
+            cluster2class = {i: [] for i in range(self.k)}
             class_quantile_score = torch.tensor([], device=self.device)
             class_idx_list = []
             for class_idx in range(self.num_classes):
