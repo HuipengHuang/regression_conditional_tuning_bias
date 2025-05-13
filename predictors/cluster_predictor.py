@@ -74,12 +74,14 @@ class ClusterPredictor:
                 num_remaining_classes = torch.sum(num_per_class >= n_min)
 
                 n_clustering, self.k = get_clustering_parameters(num_remaining_classes, n_min)
+                print(n_clustering, self.k)
                 cluster_scores, cal_scores = all_scores[:n_clustering], all_targets[n_clustering:]
                 cluster_targets, cal_targets = all_targets[:n_clustering], all_targets[n_clustering:]
             else:
                 n_clustering = int(0.5 * len(cal_loader.dataset))
                 cluster_scores, cal_scores = all_scores[:n_clustering], all_targets[n_clustering:]
                 cluster_targets, cal_targets = all_targets[:n_clustering], all_targets[n_clustering:]
+
             class2cluster = {i: 0 for i in range(self.num_classes)}
             cluster2class = {i: [] for i in range(self.k)}
             class_quantile_score = torch.tensor([], device=self.device)
