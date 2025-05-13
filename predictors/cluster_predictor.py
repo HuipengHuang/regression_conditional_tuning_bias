@@ -25,42 +25,28 @@ class ClusterPredictor:
         Compute scores for all the calibration data and take the (1 - alpha) quantile.
         If args.null_qhat == 'standard', we compute the qhat for standard conformal and use that as the default value
         """
-        cluster_dataset, cal_dataset = split_dataloader(cal_loader)
-        clustered_dataloader = DataLoader(cluster_dataset, batch_size=100, pin_memory=True)
-        cal_loader = DataLoader(cal_dataset, batch_size=100, pin_memory=True)
 
         self.net.eval()
         with torch.no_grad():
             if alpha is None:
                 alpha = self.alpha
-            self.cluster_class(clustered_dataloader, alpha)
+            cal_scores, cal_targets = self.cluster_class(cal_loader, alpha)
             self.class_threshold = torch.zeros(size=(self.num_classes,), device=self.device)
-
-            all_score = torch.tensor([], device=self.device)
-            all_target = torch.tensor([], device=self.device)
-
-            for data, target in cal_loader:
-                data, target = data.to(self.device), target.to(self.device)
-                logits = self.net(data)
-                prob = torch.softmax(logits, dim=-1)
-                target_score = self.score_function(prob, target)
-                all_score = torch.cat((all_score, target_score), dim=0)
-                all_target = torch.cat((all_target, target), dim=0)
 
             for i in range(self.k):
                 class_list = self.cluster2class[i]
                 if (i == self.k - 1) and (self.args.null_qhat == 'standard'):
-                    cluster_score = all_score
+                    cluster_score = cal_scores
                 else:
-                    mask = torch.zeros(size=(all_target.shape[0],), device=self.device)
+                    mask = torch.zeros(size=(cal_targets.shape[0],), device=self.device)
                     for class_id in class_list:
-                        mask = (mask) + (target == class_id)
-                    cluster_score = all_score[mask > 0]
+                        mask = (mask) + (cal_targets == class_id)
+                    cluster_score = cal_scores[mask > 0]
 
                 cluster_quantile = torch.quantile(cluster_score, 1 - alpha)
                 self.class_threshold[torch.tensor(self.cluster2class[i], device=self.device)] += cluster_quantile
 
-    def cluster_class(self, clustered_dataloader, alpha):
+    def cluster_class(self, cal_loader, alpha):
         n_threshold = get_quantile_threshold(alpha if alpha < 0.1 else 0.1)
 
         T = [0.5, 0.6, 0.7, 0.8, 0.9]
@@ -71,7 +57,7 @@ class ClusterPredictor:
             all_targets = []
             all_scores = []
 
-            for data, target in clustered_dataloader:
+            for data, target in cal_loader:
                 data, target = data.to(self.device, non_blocking=True), target.to(self.device, non_blocking=True)
                 logits = self.net(data)
                 prob = torch.softmax(logits, dim=1)
@@ -88,15 +74,20 @@ class ClusterPredictor:
                 num_remaining_classes = torch.sum(num_per_class >= n_min)
 
                 n_clustering, self.k = get_clustering_parameters(num_remaining_classes, n_min)
-
+                cluster_scores, cal_scores = all_scores[:n_clustering], all_targets[n_clustering:]
+                cluster_targets, cal_targets = all_targets[:n_clustering], all_targets[n_clustering:]
+            else:
+                n_clustering = int(0.5 * len(cal_loader.dataset))
+                cluster_scores, cal_scores = all_scores[:n_clustering], all_targets[n_clustering:]
+                cluster_targets, cal_targets = all_targets[:n_clustering], all_targets[n_clustering:]
             class2cluster = {i: 0 for i in range(self.num_classes)}
             cluster2class = {i: [] for i in range(self.k)}
             class_quantile_score = torch.tensor([], device=self.device)
             class_idx_list = []
             for class_idx in range(self.num_classes):
-                mask = (all_targets == class_idx)
+                mask = (cluster_targets == class_idx)
                 if mask.any():
-                    scores = all_scores[mask]
+                    scores = cluster_scores[mask]
                     if len(scores) <= n_threshold:
                         class2cluster[class_idx] = self.k - 1
                         cluster2class[self.k - 1].append(class_idx)
@@ -104,7 +95,7 @@ class ClusterPredictor:
 
                     class_idx_list.append(class_idx)
                     class_quantile_score = torch.cat((class_quantile_score, torch.zeros(size=(1, len(T)), device=self.device)), dim=0)
-                    print(class_quantile_score.shape)
+
                     for j, t in enumerate(T):
                         q = math.ceil(t * (len(scores) + 1)) / len(scores)
                         class_quantile_score[-1, j] = torch.quantile(scores, q)
@@ -118,6 +109,8 @@ class ClusterPredictor:
 
             self.class2cluster = class2cluster
             self.cluster2class = cluster2class
+
+            return cal_scores, cal_targets
 
     def calibrate_batch_logit(self, logits, target, alpha):
         """Design for conformal training, which needs to compute threshold in every batch"""
