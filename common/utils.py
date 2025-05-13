@@ -1,10 +1,8 @@
 import datetime
-
 import torch
 import numpy as np
 import random
 import os
-
 
 def set_seed(seed):
     np.random.seed(seed)
@@ -14,9 +12,7 @@ def set_seed(seed):
 
 
 
-
-
-def save_exp_result(args, trainer, result_dict, path=None):
+def save_exp_result(args, result_dict, path=None):
     current_time = datetime.datetime.now()
     month_day = current_time.strftime("%b%d")
     if path is None:

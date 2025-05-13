@@ -1,10 +1,11 @@
-from trainers.adapter import Adapter
-from .predictor import Predictor
-from .localized_predictor import LocalizedPredictor
+import numpy as np
+def get_quantile_threshold(alpha):
+    '''
+    Compute smallest n such that ceil((n+1)*(1-alpha)/n) <= 1
+    '''
 
-def get_predictor(args, net):
-    if args.predictor == "local":
-        predictor = LocalizedPredictor(args, net)
-    else:
-        predictor = Predictor(args, net)
-    return predictor
+    n = 1
+    while np.ceil((n+1)*(1-alpha)/n) > 1:
+        n += 1
+
+    return n

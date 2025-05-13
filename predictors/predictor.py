@@ -1,8 +1,6 @@
 import numpy as np
-
 from scores.utils import get_score
 import torch
-import torch.nn as nn
 import math
 
 
@@ -52,12 +50,13 @@ class Predictor:
         if self.threshold is None:
             raise ValueError("Threshold score is None. Please do calibration first.")
         self.net.eval()
+        num_classes = test_loader.dataset.num_classes
         with torch.no_grad():
             total_accuracy = 0
             total_coverage = 0
             total_prediction_set_size = 0
-            class_coverage = [0 for i in range(100)]
-            class_size = [0 for i in range(100)]
+            class_coverage = [0 for i in range(num_classes)]
+            class_size = [0 for i in range(num_classes)]
             total_samples = 0
 
             for data, target in test_loader:
@@ -72,9 +71,12 @@ class Predictor:
 
                 batch_score = self.score_function(prob)
                 prediction_set = (batch_score <= self.threshold).to(torch.int)
+
                 target_prediction_set = prediction_set[torch.arange(batch_size), target]
                 total_coverage += target_prediction_set.sum().item()
+
                 total_prediction_set_size += prediction_set.sum().item()
+
                 for i in range(prediction_set.shape[0]):
                     class_coverage[target[i]] += 1
                     class_size[target[i]] += 1
@@ -84,7 +86,7 @@ class Predictor:
             coverage = total_coverage / total_samples
             avg_set_size = total_prediction_set_size / total_samples
             class_coverage_gap = np.array(class_coverage) / np.array(class_size)
-            class_coverage_gap = np.sum(np.abs(class_coverage_gap - (1 - self.alpha))) / 100
+            class_coverage_gap = np.sum(np.abs(class_coverage_gap - (1 - self.alpha))) / num_classes
             result_dict = {
                 f"{self.args.score}_Top1Accuracy": accuracy,
                 f"{self.args.score}_AverageSetSize": avg_set_size,

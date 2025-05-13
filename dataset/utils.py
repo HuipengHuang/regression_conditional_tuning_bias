@@ -71,7 +71,7 @@ def split_dataloader(original_dataloader, split_ratio=0.5):
 
         Args:
             original_dataloader (DataLoader): The original DataLoader to split.
-            split_ratio (float): The ratio of the first subset (default: 0.7).
+            split_ratio (float): The ratio of the first subset (default: 0.5).
 
         Returns:
             subset1: Training dataset
