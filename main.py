@@ -16,7 +16,7 @@ parser.add_argument("--save", default="False", choices=["True", "False"], type=s
 parser.add_argument("--algorithm",'-alg', default="standard", choices=["standard", "uatr"],
                     help="Uncertainty aware training use uatr. Otherwise use standard")
 parser.add_argument("--load", default="False", type=str, choices=["True", "False"])
-parser.add_argument("--predictor", default=None, type=str, choices=["local"])
+parser.add_argument("--predictor", default=None, type=str, choices=["local", "cluster"])
 parser.add_argument("--save_model", default=None, type=str, choices=["True", "False"])
 
 #  Training configuration
@@ -54,6 +54,10 @@ parser.add_argument("--mu", type=float, default=None,
 parser.add_argument("--mu_size", type=float, default=None,
                     help="Weight of train_loss_size in the uncertainty_aware_loss function")
 
+# Hyperparameter for clustered CP
+parser.add_argument("--k", type=int, default=None, help="Number of cluster center in kmeans algorithm")
+parser.add_argument("null_qhat", default="standard", type=str, help="If standard, use standard calibration for classses belong to null.")
+
 
 args = parser.parse_args()
 seed = args.seed
@@ -83,7 +87,7 @@ for key, value in result_dict.items():
 
 
 if args.save == "True":
-    save_exp_result(args, trainer, result_dict)
+    save_exp_result(args, result_dict)
 
 """for score in ["thr", "aps", "raps", "saps"]:
     args.score = score
