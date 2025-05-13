@@ -43,6 +43,7 @@ class ClusterPredictor:
                         mask = (mask) + (cal_targets == class_id)
                     cluster_score = cal_scores[mask > 0]
                 N = cluster_score.shape[0]
+                print(cluster_score.dtype)
                 cluster_quantile = torch.quantile(cluster_score, math.ceil((1 - alpha) * (N + 1)) / N)
                 self.class_threshold[torch.tensor(self.cluster2class[i], device=self.device)] += cluster_quantile
 
