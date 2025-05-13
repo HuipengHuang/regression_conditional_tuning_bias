@@ -109,7 +109,6 @@ class ClusterPredictor:
             class_cts = np.array(class_cts)
             kmeans = KMeans(n_clusters=self.k, random_state=0, n_init=10).fit(class_quantiles_np, sample_weight=np.sqrt(class_cts))
 
-            print(kmeans.labels_)
             for idx, cluster_id in enumerate(kmeans.labels_):
                 class2cluster[class_idx_list[idx]] = cluster_id
                 cluster2class[cluster_id].append(class_idx_list[idx])
