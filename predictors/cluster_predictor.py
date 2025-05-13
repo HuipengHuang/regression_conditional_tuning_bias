@@ -107,6 +107,7 @@ class ClusterPredictor:
 
             class_quantiles_np = class_quantile_score.cpu().numpy()
             class_cts = np.array([class_cts])
+            print(class_cts.shape)
             kmeans = KMeans(n_clusters=self.k, random_state=0, n_init=10).fit(class_quantiles_np, sample_weight=np.sqrt(class_cts))
 
             print(kmeans.labels_)
