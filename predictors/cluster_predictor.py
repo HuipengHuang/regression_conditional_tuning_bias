@@ -43,7 +43,7 @@ class ClusterPredictor:
                         mask = (mask) + (cal_targets == class_id)
                     cluster_score = cal_scores[mask > 0]
                 N = cluster_score.shape[0]
-                print(cluster_score.dtype)
+
                 cluster_quantile = torch.quantile(cluster_score, math.ceil((1 - alpha) * (N + 1)) / N)
                 self.class_threshold[torch.tensor(self.cluster2class[i], device=self.device)] += cluster_quantile
 
@@ -68,6 +68,7 @@ class ClusterPredictor:
 
             all_targets = torch.cat(all_targets)
             all_scores = torch.cat(all_scores)
+
             if self.k is None:
                 num_per_class = torch.tensor([(all_targets==i).sum() for i in range(self.num_classes)])
                 n_min = min(num_per_class)
@@ -80,7 +81,7 @@ class ClusterPredictor:
                 cluster_targets, cal_targets = all_targets[:n_clustering], all_targets[n_clustering:]
             else:
                 n_clustering = int(0.5 * len(cal_loader.dataset))
-                cluster_scores, cal_scores = all_scores[:n_clustering], all_targets[n_clustering:]
+                cluster_scores, cal_scores = all_scores[:n_clustering], all_scores[n_clustering:]
                 cluster_targets, cal_targets = all_targets[:n_clustering], all_targets[n_clustering:]
 
             class2cluster = {i: 0 for i in range(self.num_classes)}
