@@ -97,7 +97,7 @@ class ClusterPredictor:
 
                     class_idx_list.append(class_idx)
                     class_quantile_score = torch.cat((class_quantile_score, torch.zeros(size=(1, len(T)), device=self.device)), dim=0)
-
+                    print(class_quantile_score)
                     for j, t in enumerate(T):
                         q = math.ceil(t * (len(scores) + 1)) / len(scores)
                         class_quantile_score[-1, j] = torch.quantile(scores, q)
