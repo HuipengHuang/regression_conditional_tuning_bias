@@ -76,13 +76,14 @@ class ClusterPredictor:
 
             if self.k is None:
                 n_clustering, self.k = get_clustering_parameters(num_remaining_classes, n_min)
-
-                cluster_scores, cal_scores = all_scores[:n_clustering], all_scores[n_clustering:]
-                cluster_targets, cal_targets = all_targets[:n_clustering], all_targets[n_clustering:]
+                frac_clustering = n_clustering / n_min
+                cluster_length = int(frac_clustering * all_targets.shape[0])
+                cluster_scores, cal_scores = all_scores[:cluster_length], all_scores[cluster_length:]
+                cluster_targets, cal_targets = all_targets[:cluster_length], all_targets[cluster_length:]
             else:
-                n_clustering = int(0.5 * len(cal_loader.dataset))
-                cluster_scores, cal_scores = all_scores[:n_clustering], all_scores[n_clustering:]
-                cluster_targets, cal_targets = all_targets[:n_clustering], all_targets[n_clustering:]
+                cluster_length  = int(0.3 * len(cal_loader.dataset))
+                cluster_scores, cal_scores = all_scores[:cluster_length], all_scores[cluster_length:]
+                cluster_targets, cal_targets = all_targets[:cluster_length], all_targets[cluster_length:]
 
             class2cluster = {i: 0 for i in range(self.num_classes)}
             cluster2class = {i: [] for i in range(self.k + 1)}
