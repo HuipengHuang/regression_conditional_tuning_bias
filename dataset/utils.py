@@ -10,8 +10,8 @@ def build_dataset(args):
 
     if dataset_name == "cifar10":
         num_class = 10
-        train_dataset = CIFAR10(root='/data/home/huanghp/CP_Framework/data/dataset', train=True, download=False,transform=transforms.Compose([transforms.ToTensor()]))
-        cal_test_dataset = CIFAR10(root='/data/home/huanghp/CP_Framework/data/dataset', train=False, download=False,
+        train_dataset = CIFAR10(root='./data/dataset', train=True, download=False,transform=transforms.Compose([transforms.ToTensor()]))
+        cal_test_dataset = CIFAR10(root='./data/dataset', train=False, download=False,
                                  transform=transforms.Compose([transforms.ToTensor()]))
     elif dataset_name == "cifar100":
         num_class = 100
@@ -27,8 +27,8 @@ def build_dataset(args):
             transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
         ])
 
-        train_dataset = CIFAR100(root="/data/home/huanghp/CP_Framework/data/dataset", download=True, train=True, transform=train_transform)
-        cal_test_dataset = CIFAR100(root='/data/home/huanghp/CP_Framework/data/dataset', download=True, train=False,
+        train_dataset = CIFAR100(root="./data/dataset", download=True, train=True, transform=train_transform)
+        cal_test_dataset = CIFAR100(root='./data/dataset', download=True, train=False,
                                  transform=val_transform)
 
     elif dataset_name == "imagenet":
