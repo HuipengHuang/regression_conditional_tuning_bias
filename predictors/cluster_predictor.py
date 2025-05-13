@@ -103,6 +103,7 @@ class ClusterPredictor:
                         class_quantile_score[-1, j] = torch.quantile(scores, q)
 
             class_quantiles_np = class_quantile_score.cpu().numpy()
+            print(class_quantiles_np.shape)
             kmeans = KMeans(n_clusters=self.k - 1, random_state=0).fit(class_quantiles_np)
 
             for idx, cluster_id in enumerate(kmeans.labels_):
