@@ -84,13 +84,13 @@ class ClusterPredictor:
 
             all_targets = torch.cat(all_targets)
             all_scores = torch.cat(all_scores)
+            if self.k is None:
+                num_per_class = torch.tensor([(all_targets==i).sum() for i in range(self.num_classes)])
+                n_min = min(num_per_class)
+                n_min = max(n_min, n_threshold)
+                num_remaining_classes = torch.sum(num_per_class >= n_min)
 
-            num_per_class = torch.tensor([(all_targets==i).sum() for i in range(self.num_classes)])
-            n_min = min(num_per_class)
-            n_min = max(n_min, n_threshold)
-            num_remaining_classes = torch.sum(num_per_class >= n_min)
-
-            n_clustering, self.k = get_clustering_parameters(num_remaining_classes, n_min)
+                n_clustering, self.k = get_clustering_parameters(num_remaining_classes, n_min)
 
             class_quantile_score = torch.tensor([], device=self.device)
             class_idx_list = []
