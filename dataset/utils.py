@@ -10,8 +10,8 @@ def build_dataset(args):
 
     if dataset_name == "cifar10":
         num_class = 10
-        train_dataset = CIFAR10(root='/data/dataset', train=True, download=False,transform=transforms.Compose([transforms.ToTensor()]))
-        cal_test_dataset = CIFAR10(root='/data/dataset', train=False, download=False,
+        train_dataset = CIFAR10(root='/data/home/huanghp/CP_Framework/data/dataset', train=True, download=False,transform=transforms.Compose([transforms.ToTensor()]))
+        cal_test_dataset = CIFAR10(root='/data/home/huanghp/CP_Framework/data/dataset', train=False, download=False,
                                  transform=transforms.Compose([transforms.ToTensor()]))
     elif dataset_name == "cifar100":
         num_class = 100
