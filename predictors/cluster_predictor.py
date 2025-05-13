@@ -125,15 +125,15 @@ class ClusterPredictor:
     def evaluate(self, test_loader):
         """Must be called after calibration.
         Output a dictionary containing Top1 Accuracy, Coverage and Average Prediction Set Size."""
-        if self.threshold is None:
+        if self.class_threshold is None:
             raise ValueError("Threshold score is None. Please do calibration first.")
         self.net.eval()
         with torch.no_grad():
             total_accuracy = 0
             total_coverage = 0
             total_prediction_set_size = 0
-            class_coverage = [0 for _ in range(100)]
-            class_size = [0 for _ in range()]
+            class_coverage = [0 for _ in range(self.num_classes)]
+            class_size = [0 for _ in range(self.num_classes)]
             total_samples = 0
 
             for data, target in test_loader:
