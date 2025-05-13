@@ -90,6 +90,7 @@ class ClusterPredictor:
                 mask = (cluster_targets == class_idx)
 
                 scores = cluster_scores[mask]
+                print(len(scores))
                 if len(scores) <= n_threshold:
                     class2cluster[class_idx] = self.k - 1
                     cluster2class[self.k - 1].append(class_idx)
