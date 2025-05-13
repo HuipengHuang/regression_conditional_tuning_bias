@@ -56,7 +56,7 @@ parser.add_argument("--mu_size", type=float, default=None,
 
 # Hyperparameter for clustered CP
 parser.add_argument("--k", type=int, default=None, help="Number of cluster center in kmeans algorithm")
-parser.add_argument("null_qhat", default="standard", type=str, help="If standard, use standard calibration for classses belong to null.")
+parser.add_argument("--null_qhat", default="standard", type=str, help="If standard, use standard calibration for classses belong to null.")
 
 
 args = parser.parse_args()
