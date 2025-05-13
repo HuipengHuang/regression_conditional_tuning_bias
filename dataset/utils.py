@@ -27,8 +27,8 @@ def build_dataset(args):
             transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)),
         ])
 
-        train_dataset = CIFAR100(root="./data/dataset", download=True, train=True, transform=train_transform)
-        cal_test_dataset = CIFAR100(root='./data/dataset', download=True, train=False,
+        train_dataset = CIFAR100(root="/data/home/huanghp/CP_Framework/data/dataset", download=True, train=True, transform=train_transform)
+        cal_test_dataset = CIFAR100(root='/data/home/huanghp/CP_Framework/data/dataset', download=True, train=False,
                                  transform=val_transform)
 
     elif dataset_name == "imagenet":

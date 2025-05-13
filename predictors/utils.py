@@ -25,8 +25,8 @@ def get_clustering_parameters(num_classes, n_totalcal):
 
     '''
     # Alias for convenience
-    K = num_classes
     N = n_totalcal
+    K = num_classes
 
     n_clustering = int(N * K / (75 + K))
     num_clusters = int(np.floor(n_clustering / 2))
