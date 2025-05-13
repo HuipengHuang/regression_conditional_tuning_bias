@@ -28,7 +28,7 @@ class ClusterPredictor:
         cluster_dataset, cal_dataset = split_dataloader(cal_loader)
         clustered_dataloader = DataLoader(cluster_dataset, batch_size=100, pin_memory=True)
         cal_loader = DataLoader(cal_dataset, batch_size=100, pin_memory=True)
-        self.num_classes = len(clustered_dataloader.dataset.classes)
+        self.num_classes = len(clustered_dataloader.dataset.dataset.classes)
 
         self.net.eval()
         with torch.no_grad():
