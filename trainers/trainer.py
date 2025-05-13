@@ -3,7 +3,7 @@ from tqdm import tqdm
 import models
 from loss.utils import get_loss_function
 from .utils import get_optimizer
-from predictors.utils import get_predictor
+from predictors.get_predictor import get_predictor
 class Trainer:
     """
     Trainer class that implement all the functions regarding training.
