@@ -17,5 +17,5 @@ def get_loss_function(args, predictor):
         return UncertaintyAwareLoss(args, predictor)
     elif args.loss == "cadapter":
         return CAdapterLoss(args, predictor)
-    elif args.loss == "standard":
+    elif args.loss == "ce":
         return nn.CrossEntropyLoss()

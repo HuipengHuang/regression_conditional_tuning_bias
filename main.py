@@ -3,7 +3,6 @@ from torch.utils.data import DataLoader
 from common.utils import set_seed, save_exp_result
 from trainers.get_trainer import get_trainer
 from dataset.utils import build_dataset
-from predictors import predictor
 
 parser = argparse.ArgumentParser()
 
@@ -26,7 +25,7 @@ parser.add_argument("--epochs", '-e', type=int, default=100, help='Number of epo
 parser.add_argument("--batch_size",'-bsz', type=int, default=32)
 parser.add_argument("--momentum", type=float, default=0, help='Momentum')
 parser.add_argument("--weight_decay", type=float, default=0, help='Weight decay')
-parser.add_argument("--loss", type=str,default='standard', choices=['standard', 'conftr', 'ua', "cadapter", "hinge"],
+parser.add_argument("--loss", type=str,default='ce', choices=['ce', 'conftr', 'ua', "cadapter", "hinge"],
                     help='Loss function you want to use. standard loss is Cross Entropy Loss.')
 
 #  Hyperpatameters for Conformal Prediction
