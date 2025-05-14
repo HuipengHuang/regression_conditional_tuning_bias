@@ -1,8 +1,7 @@
 import argparse
-from torch.utils.data import DataLoader
-from common.utils import set_seed, save_exp_result
-from trainers.get_trainer import get_trainer
-from dataset.utils import build_dataset
+from common import algorithm
+from common.utils import set_seed
+
 
 parser = argparse.ArgumentParser()
 
@@ -12,7 +11,7 @@ parser.add_argument("--dataset", type=str, default="cifar100", choices=["cifar10
 parser.add_argument('--seed', type=int, default=None)
 parser.add_argument("--pretrained", default="False", type=str, choices=["True", "False"])
 parser.add_argument("--save", default="False", choices=["True", "False"], type=str)
-parser.add_argument("--algorithm",'-alg', default="standard", choices=["standard", "uatr"],
+parser.add_argument("--algorithm",'-alg', default="cp", choices=["standard", "uatr", "cp"],
                     help="Uncertainty aware training use uatr. Otherwise use standard")
 parser.add_argument("--load", default="False", type=str, choices=["True", "False"])
 parser.add_argument("--predictor", default=None, type=str, choices=["local", "cluster"])
@@ -63,42 +62,8 @@ seed = args.seed
 if seed:
     set_seed(seed)
 
-train_dataset, cal_dataset, test_dataset, num_classes = build_dataset(args)
+if args.algorithm == "standard":
+    algorithm.standard(args)
+else:
+    algorithm.cp(args)
 
-train_loader = DataLoader(train_dataset, batch_size=args.batch_size, drop_last=True)
-cal_loader = DataLoader(cal_dataset, batch_size=args.batch_size)
-test_loader = DataLoader(test_dataset, batch_size=args.batch_size)
-
-trainer = get_trainer(args, num_classes)
-
-trainer.train(train_loader, args.epochs)
-
-del train_loader
-del train_dataset
-
-trainer.predictor.calibrate(cal_loader)
-del cal_loader
-
-result_dict = trainer.predictor.evaluate(test_loader)
-
-for key, value in result_dict.items():
-    print(f'{key}: {value}')
-
-
-if args.save == "True":
-    save_exp_result(args, result_dict)
-
-"""for score in ["thr", "aps", "raps", "saps"]:
-    args.score = score
-    args.saps_size_penalty_weight = 1
-    args.raps_size_penalty_weight = 1
-    args.raps_size_regularization = 1
-    trainer.predictor = predictor.Predictor(args, trainer.net)
-    trainer.predictor.calibrate(cal_loader)
-    sub_result_dict = trainer.predictor.evaluate(test_loader)
-    print("-----")
-    print(f"Score function: {score}")
-    print(f"threshold: {trainer.predictor.threshold}")
-    for key, value in sub_result_dict.items():
-        print(f'{key}: {value}')
-        result_dict[key] = value"""
