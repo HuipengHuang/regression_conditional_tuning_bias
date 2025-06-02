@@ -22,14 +22,13 @@ class Predictor:
             if alpha is None:
                 alpha = self.alpha
             cal_score = torch.tensor([], device=self.device)
-            for data, target in cal_loader:
+            for data, y_true in cal_loader:
                 data = data.to(self.device)
-                target = target.to(self.device)
+                y_true = y_true.to(self.device)
 
-                logits = self.net(data)
+                y_pred = self.net(data)
 
-                prob = torch.softmax(logits, dim=1)
-                batch_score = self.score_function.compute_target_score(prob, target)
+                batch_score = self.score_function(y_pred, y_true)
 
                 cal_score = torch.cat((cal_score, batch_score), 0)
             N = cal_score.shape[0]
@@ -37,79 +36,41 @@ class Predictor:
             self.threshold = threshold
             return threshold
 
-    def calibrate_batch_logit(self, logits, target, alpha):
-        """Design for conformal training, which needs to compute threshold in every batch"""
-        prob = torch.softmax(logits, dim=-1)
-        batch_score = self.score_function.compute_target_score(prob, target)
-        N = target.shape[0]
-        return torch.quantile(batch_score, math.ceil((1 - alpha) * (N + 1)) / N, dim=0)
-
     def evaluate(self, test_loader):
         """Must be called after calibration.
         Output a dictionary containing Top1 Accuracy, Coverage and Average Prediction Set Size."""
         self.net.eval()
         if self.threshold is not None:
-            num_classes = test_loader.dataset.num_classes
             with torch.no_grad():
-                total_accuracy = 0
                 total_coverage = 0
-                total_prediction_set_size = 0
-                class_coverage = [0 for i in range(num_classes)]
-                class_size = [0 for i in range(num_classes)]
+                total_prediction_width = 0
                 total_samples = 0
 
-                for data, target in test_loader:
-                    data, target = data.to(self.device), target.to(self.device)
-                    batch_size = target.shape[0]
+                for data, y_true in test_loader:
+                    data, y_true = data.to(self.device), y_true.to(self.device)
+                    batch_size = y_true.shape[0]
                     total_samples += batch_size
 
-                    logit = self.net(data)
-                    prob = torch.softmax(logit, dim=-1)
-                    prediction = torch.argmax(prob, dim=-1)
-                    total_accuracy += (prediction == target).sum().item()
+                    y_pred = self.net(data)
 
-                    batch_score = self.score_function(prob)
-                    prediction_set = (batch_score <= self.threshold).to(torch.int)
+                    batch_score = self.score_function(y_pred, y_true)
+                    conf_interval = self.score_function.generate_intervals(y_pred, self.threshold)
 
-                    target_prediction_set = prediction_set[torch.arange(batch_size), target]
-                    total_coverage += target_prediction_set.sum().item()
+                    total_coverage += torch.sum((batch_score >= conf_interval[:, 0]).to(torch.int) *
+                                                (batch_score <= conf_interval[:, 1]).to(torch.int))
 
-                    total_prediction_set_size += prediction_set.sum().item()
+                    total_prediction_width += torch.sum(conf_interval[:, 1] - conf_interval[:, 0])
 
-                    for i in range(prediction_set.shape[0]):
-                        class_coverage[target[i]] += 1
-                        class_size[target[i]] += 1
-
-
-                accuracy = total_accuracy / total_samples
                 coverage = total_coverage / total_samples
-                avg_set_size = total_prediction_set_size / total_samples
-                class_coverage_gap = np.array(class_coverage) / np.array(class_size)
-                class_coverage_gap = np.sum(np.abs(class_coverage_gap - (1 - self.alpha))) / num_classes
+                avg_width = total_prediction_width / total_samples
+
                 result_dict = {
-                    f"{self.args.score}_Top1Accuracy": accuracy,
-                    f"{self.args.score}_AverageSetSize": avg_set_size,
+                    f"{self.args.score}_AverageWidth": avg_width,
                     f"{self.args.score}_Coverage": coverage,
-                    f"{self.args.score}_class_coverage_gap": class_coverage_gap,
                 }
         else:
-            total_samples = 0
-            total_accuracy = 0
-            with torch.no_grad():
-                for data, target in test_loader:
-                    data, target = data.to(self.device), target.to(self.device)
-                    batch_size = target.shape[0]
-                    total_samples += batch_size
+            raise NotImplementedError
 
-                    logit = self.net(data)
-                    prob = torch.softmax(logit, dim=-1)
-                    prediction = torch.argmax(prob, dim=-1)
-                    total_accuracy += (prediction == target).sum().item()
-
-                accuracy = total_accuracy / total_samples
-                result_dict = {
-                    f"{self.args.score}_Top1Accuracy": accuracy,
-                }
 
         return result_dict
 

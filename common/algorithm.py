@@ -1,17 +1,17 @@
 from torch.utils.data import DataLoader
-from dataset.utils import build_dataset
+from datasets.utils import build_dataset
 from trainers.get_trainer import get_trainer
 from common.utils import save_exp_result
 
 
 def cp(args):
-    train_dataset, cal_dataset, test_dataset, num_classes = build_dataset(args)
+    train_dataset, cal_dataset, test_dataset = build_dataset(args)
 
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
     cal_loader = DataLoader(cal_dataset, batch_size=args.batch_size)
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size)
 
-    trainer = get_trainer(args, num_classes)
+    trainer = get_trainer(args)
 
     trainer.train(train_loader, args.epochs)
     del train_loader
@@ -32,12 +32,12 @@ def cp(args):
 
 
 def standard(args):
-    train_dataset, _, test_dataset, num_classes = build_dataset(args)
+    train_dataset, _, test_dataset = build_dataset(args)
 
     train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size)
 
-    trainer = get_trainer(args, num_classes)
+    trainer = get_trainer(args)
 
     trainer.train(train_loader, args.epochs)
 
