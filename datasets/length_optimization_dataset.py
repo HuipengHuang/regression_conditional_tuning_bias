@@ -3,7 +3,7 @@ from torch.utils.data import Dataset
 import numpy as np
 
 class SyntheticLinearRegressionDataset(Dataset):
-    def __init__(self, n_samples, n_binary=10, n_continuous=90, sigma_x=1.0, sigma=1.0):
+    def __init__(self, n_samples, n_binary=10, n_continuous=10, sigma_x=1.0, sigma=1.0):
         # Feature generation
         self.n_binary = n_binary
         self.n_continuous = n_continuous

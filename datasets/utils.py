@@ -21,9 +21,9 @@ def build_dataloader(args):
         args.in_shape = 1
 
     elif dataset_name == "cpl_syn":
-        train_dataset = SyntheticLinearRegressionDataset(n_samples=10000)
+        train_dataset = SyntheticLinearRegressionDataset(n_samples=15000)
 
-        num_sample = args.cal_num + args.tune_num + 10000 if args.tune_num else args.cal_num + 10000
+        num_sample = args.cal_num + args.tune_num + 20000 if args.tune_num else args.cal_num + 20000
         cal_test_dataset = SyntheticLinearRegressionDataset(n_samples=num_sample)
         args.in_shape = cal_test_dataset.n_binary + cal_test_dataset.n_continuous
 
