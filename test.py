@@ -181,3 +181,185 @@ for t in range(60):
                                                                      lambda_marginal, alpha=0.1, sigma=0.1)
 
 
+import torch
+import torch.optim as optim
+device = 'cpu'
+X_cal = X_cal.to(device)
+S_cal = S_cal.to(device)
+# Pinball Loss
+def pinball_loss(q, s, tau):
+    return torch.where(s >= q, tau * (s - q), (1 - tau) * (q - s))
+
+# Definitions and initializations
+theta_tensor = torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], requires_grad=True).to(device)
+theta_marginal = torch.tensor([1.0], requires_grad=True).to(device)
+
+optimizer = optim.Adam([theta_tensor, theta_marginal], lr=0.01)
+
+for epoch in range(5000):
+    optimizer.zero_grad()
+
+    # Simplified example operation
+    sum_theta = torch.sum(theta_tensor * X_cal[:, :theta_tensor.shape[0]] + theta_marginal, axis=1)
+
+    loss = pinball_loss(sum_theta, S_cal, 0.9).mean()
+
+    loss.backward()
+    optimizer.step()
+
+size = S_cal.shape[0]
+q_HS = torch.quantile(S_cal, 0.9*(size+1)/size)
+
+condition = (S_test <= q_HS).float()
+value = condition.mean().item()
+
+print(f'Quantile (q): {q_HS.item():.4f}')
+
+import matplotlib.pyplot as plt
+
+device = 'cpu'
+X_test = X_test.to(device)
+S_test = S_test.to(device)
+h = h.to(device)
+
+
+def group_data_by_feature(X, S, binary_feature_idx):
+    """
+    Partition data based on the value of binary features.
+    binary_feature_idx: indices of the binary features.
+    """
+    grouped_data = {}
+
+    for idx in binary_feature_idx:
+        for value in [0, 1]:  # binary feature can be 0 or 1
+            mask = (X[:, idx] == value)
+            grouped_data[f'Feature_{idx}_Value_{value}'] = (X[mask], S[mask])
+    return grouped_data
+
+
+def test_model_across_groups(X_test, y_test, binary_feature_idx):
+    # Group the data by binary features
+    groups = group_data_by_feature(X_test, S_test, binary_feature_idx)
+
+    # Compute accuracy for each group
+    accuracies1 = {}
+    accuracies2 = {}
+    accuracies3 = {}
+
+    for group, (X_group, S_group) in groups.items():
+        X_group, S_group = X_group.to(device), S_group.to(device)
+        if len(X_group) > 0:  # Avoid groups with no samples
+            with torch.no_grad():
+                h_x_group = h(X_group).squeeze()
+            condition = (S_group <= h_x_group).float()
+            accuracies1[group] = condition.mean().item()
+
+            condition = (S_group <= q_HS).float()
+            accuracies2[group] = condition.mean().item()
+
+            condition = (S_group <= torch.sum(theta_tensor * X_group[:, :theta_tensor.shape[0]] + theta_marginal,
+                                              axis=1)).float()
+            accuracies3[group] = condition.mean().item()
+
+    return accuracies1, accuracies2, accuracies3
+
+
+def test_length_across_groups(X_test, y_test, binary_feature_idx):
+    groups = group_data_by_feature(X_test, S_test, binary_feature_idx)
+
+    length1 = {}
+    length2 = {}
+    length3 = {}
+
+    for group, (X_group, S_group) in groups.items():
+        X_group, S_group = X_group.to(device), S_group.to(device)
+        if len(X_group) > 0:  # Avoid groups with no samples
+            with torch.no_grad():
+                h_x_group = h(X_group).squeeze()
+            length1[group] = torch.clamp(h_x_group, min=0).mean().item()
+
+            length2[group] = q_HS
+
+            length3[group] = torch.sum(theta_tensor * X_group[:, :theta_tensor.shape[0]] + theta_marginal,
+                                       axis=1).mean().item()
+
+    return length1, length2, length3
+
+
+def compare_models_plot(accuracies_model1, accuracies_model2, accuracies_model3):
+    # Sorting groups for better visualization
+    sorted_groups = ['marginal coverage'] + sorted(k for k in accuracies_model1 if k != 'marginal coverage')
+    acc1 = [accuracies_model1[group] for group in sorted_groups]
+    acc2 = [accuracies_model2[group] for group in sorted_groups]
+    acc3 = [accuracies_model3[group] for group in sorted_groups]
+
+    bar_width = 0.15
+    index = range(len(sorted_groups))
+
+    plt.figure(figsize=(15, 7))
+    bar1 = plt.bar([i - 1 * bar_width for i in index], acc1, bar_width, label='CPL', color='b', alpha=0.7)
+    bar2 = plt.bar(index, acc2, bar_width, label='Split Conformal', color='g', alpha=0.7)
+    bar3 = plt.bar([i + 1 * bar_width for i in index], acc3, bar_width, label='BatchGCP', color='r', alpha=0.7)
+
+    plt.axhline(0.9, color='red', linestyle='--')  # Drawing the baseline
+
+    plt.ylim(0.88, 0.92)  # Set y-axis limits here
+
+    plt.xlabel('Groups')
+    plt.ylabel('Coverage')
+    plt.xticks([i + bar_width / 2 for i in index], sorted_groups, rotation=90)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig("./output1.png")
+    plt.show()
+
+
+def compare_length_plot(length_model1, length_model2, length_model3):
+    # Sorting groups for better visualization, ensuring "average length" is first
+    sorted_groups = ['average length'] + sorted(k for k in length_model1 if k != 'average length')
+    acc1 = [length_model1[group] for group in sorted_groups]
+    acc2 = [length_model2[group] for group in sorted_groups]
+    acc3 = [length_model3[group] for group in sorted_groups]
+
+    bar_width = 0.15
+    index = range(len(sorted_groups))
+
+    plt.figure(figsize=(15, 7))
+    bar1 = plt.bar([i - 1 * bar_width for i in index], acc1, bar_width, label='CPL', color='b', alpha=0.7)
+    bar2 = plt.bar(index, acc2, bar_width, label='Split Conformal', color='g', alpha=0.7)
+    bar3 = plt.bar([i + 1 * bar_width for i in index], acc3, bar_width, label='BatchGCP', color='r', alpha=0.7)
+
+    plt.axhline(0.9, color='red', linestyle='--')  # Drawing the baseline
+
+    plt.ylim(7, 10)  # Set y-axis limits here
+
+    plt.xlabel('Groups')
+    plt.ylabel('Mean Prediction Interval Length')
+    plt.xticks([i + bar_width / 2 for i in index], sorted_groups, rotation=90)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig("./output2.png")
+    plt.show()
+
+
+binary_feature_idx = list(range(10))  # indices of the first 10 features as binary features
+accuracies1, accuracies2, accuracies3 = test_model_across_groups(X_test, S_test, binary_feature_idx)
+length1, length2, length3 = test_length_across_groups(X_test, S_test, binary_feature_idx)
+
+with torch.no_grad():
+    h_x_test = h(X_test).squeeze()
+accuracies1['marginal coverage'] = (S_test <= h_x_test).float().mean().item()
+accuracies2['marginal coverage'] = (S_test <= q_HS).float().mean().item()
+accuracies3['marginal coverage'] = (
+            S_test <= torch.sum(theta_tensor * X_test[:, :theta_tensor.shape[0]] + theta_marginal,
+                                axis=1)).float().mean().item()
+
+with torch.no_grad():
+    h_x_test = h(X_test).squeeze()
+length1['average length'] = torch.clamp(h_x_test, min=0).mean().item()
+length2['average length'] = q_HS
+length3['average length'] = torch.sum(theta_tensor * X_test[:, :theta_tensor.shape[0]] + theta_marginal,
+                                      axis=1).mean().item()
+
+compare_models_plot(accuracies1, accuracies2, accuracies3)
+compare_length_plot(length1, length2, length3)
