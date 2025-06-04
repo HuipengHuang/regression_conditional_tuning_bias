@@ -25,6 +25,7 @@ class CPL_model(NaiveModel):
         loss_h.backward()
         optimizer_h.step()
 
+        return loss_h.item()
 
     def minimize_for_f(self, optimizer_lambda, X, S, h, lambda_tensor, lambda_marginal, alpha, sigma=0.1):
         optimizer_lambda.zero_grad()
@@ -75,7 +76,10 @@ class CPL_model(NaiveModel):
             optimizer_h = optim.Adam(self.net.parameters(), lr=0.01)
 
             for epoch in range(2000):
-                self.maximize_for_h(optimizer_h, X1, S1, self.net, lambda_tensor, lambda_marginal, alpha=self.alpha, sigma=0.1)
+                loss_h = self.maximize_for_h(optimizer_h, X1, S1, self.net, lambda_tensor, lambda_marginal, alpha=self.alpha, sigma=0.1)
+                if epoch % 200 == 0:
+                    print(f"{epoch+1} / 2000 Loss: {loss_h}")
+
                 if epoch % 1000 == 500:
                     for param_group in optimizer_h.param_groups:
                         param_group['lr'] = 0.001

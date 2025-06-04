@@ -21,7 +21,7 @@ parser.add_argument("--method", default="cpl", type=str, choices=["cpl"])
 #  Training configuration
 parser.add_argument("--optimizer", type=str, default="adam", choices=["sgd", "adam"], help="Choose optimizer.")
 parser.add_argument("--learning_rate", "-lr", type=float, default=1e-2, help="Initial learning rate for optimizer")
-parser.add_argument("--epochs", '-e', type=int, default=0, help='Number of epochs to train')
+parser.add_argument("--epochs", '-e', type=int, default=10, help='Number of epochs to train')
 parser.add_argument("--batch_size",'-bsz', type=int, default=128)
 parser.add_argument("--momentum", type=float, default=0, help='Momentum')
 parser.add_argument("--weight_decay", type=float, default=0, help='Weight decay')
@@ -31,8 +31,8 @@ parser.add_argument("--loss", type=str, default='mse', choices=['quantile', 'mse
 #  Hyperpatameters for Conformal Prediction
 parser.add_argument("--alpha", type=float, default=0.1, help="Error Rate")
 parser.add_argument("--score", type=str, default="residual", choices=["residual", "cqr"])
-parser.add_argument("--cal_num", type=int, default=1000)
-parser.add_argument("--tune_num", type=int, default=1000,)
+parser.add_argument("--cal_num", type=int, default=10000)
+parser.add_argument("--tune_num", type=int, default=10000,)
 
 
 args = parser.parse_args()
