@@ -161,14 +161,14 @@ lambda_marginal = torch.tensor([5.0], requires_grad=True, device=device)
 alpha = 0.1
 
 optimizer_lambda = optim.Adam([lambda_tensor] + [lambda_marginal], lr=1)
-h = SimpleNN(n_binary, n_continuous, 4).to(device)
 
 for t in range(60):
+    print(t)
     if t % 1000 == 15:
         optimizer_lambda = optim.Adam([lambda_tensor] + [lambda_marginal], lr=0.5)
     if t % 1000 == 30:
         optimizer_lambda = optim.Adam([lambda_tensor] + [lambda_marginal], lr=0.01)
-
+    h = SimpleNN(n_binary, n_continuous, 4).to(device)
     optimizer_h = optim.Adam(h.parameters(), lr=0.01)
 
     for epoch in range(2000):

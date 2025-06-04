@@ -14,7 +14,7 @@ parser.add_argument("--save", default="True", choices=["True", "False"], type=st
 parser.add_argument("--algorithm", '-alg', default="cp", choices=["standard", "cp", "tune"],
                     help="Uncertainty aware training use uatr. Otherwise use standard")
 parser.add_argument("--load", default="False", type=str, choices=["True", "False"])
-parser.add_argument("--predictor", default="cpl", type=str, choices=["naive", "cpl", "batchgcp"])
+parser.add_argument("--predictor", default="batchgcp", type=str, choices=["naive", "cpl", "batchgcp"])
 parser.add_argument("--save_model", default=None, type=str, choices=["True", "False"])
 parser.add_argument("--method", default="naive", type=str, choices=["naive"])
 
