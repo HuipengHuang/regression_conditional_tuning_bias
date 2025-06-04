@@ -155,11 +155,13 @@ S1 = S_cal[:split_idx]
 X2 = X_cal[split_idx:]
 S2 = S_cal[split_idx:]
 
+
 lambda_tensor = torch.tensor([5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0], requires_grad=True, device=device)
 lambda_marginal = torch.tensor([5.0], requires_grad=True, device=device)
 alpha = 0.1
 
 optimizer_lambda = optim.Adam([lambda_tensor] + [lambda_marginal], lr=1)
+h = SimpleNN(n_binary, n_continuous, 4).to(device)
 
 for t in range(60):
     if t % 1000 == 15:
@@ -167,7 +169,6 @@ for t in range(60):
     if t % 1000 == 30:
         optimizer_lambda = optim.Adam([lambda_tensor] + [lambda_marginal], lr=0.01)
 
-    h = SimpleNN(n_binary, n_continuous, 4).to(device)
     optimizer_h = optim.Adam(h.parameters(), lr=0.01)
 
     for epoch in range(2000):
@@ -310,7 +311,7 @@ def compare_models_plot(accuracies_model1, accuracies_model2, accuracies_model3)
     plt.xticks([i + bar_width / 2 for i in index], sorted_groups, rotation=90)
     plt.legend()
     plt.tight_layout()
-    plt.savefig("./output1.png")
+    plt.savefig("./output3.png")
     plt.show()
 
 
@@ -338,7 +339,7 @@ def compare_length_plot(length_model1, length_model2, length_model3):
     plt.xticks([i + bar_width / 2 for i in index], sorted_groups, rotation=90)
     plt.legend()
     plt.tight_layout()
-    plt.savefig("./output2.png")
+    plt.savefig("./output4.png")
     plt.show()
 
 

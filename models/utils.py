@@ -3,6 +3,7 @@ from models.net.cqr_net import mse_model, all_q_model
 from models.net.length_optimization_net import SimpleNN
 from models.naive_model import NaiveModel
 from models.cpl import CPL_model
+from models.batch_gcp import BatchGcp_model
 import torch
 
 def build_model(args):
@@ -21,6 +22,8 @@ def build_model(args):
     net = net.to("cuda")
     if args.method == "cpl":
         model = CPL_model(net, args)
+    elif args.model == "batchgcp":
+        model = BatchGcp_model(net, args)
     else:
         model = NaiveModel(net, args)
     return model
