@@ -22,9 +22,9 @@ def build_model(args):
     net = net.to("cuda")
     if args.method == "cpl":
         model = CPL_model(net, args)
-    elif args.model == "batchgcp":
+    elif args.method == "batchgcp":
         model = BatchGcp_model(net, args)
-    elif args.model == "naive":
+    elif args.method == "naive":
         model = NaiveModel(net, args)
     else:
         raise NotImplementedError

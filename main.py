@@ -16,7 +16,7 @@ parser.add_argument("--algorithm", '-alg', default="tune", choices=["standard", 
 parser.add_argument("--load", default="False", type=str, choices=["True", "False"])
 parser.add_argument("--predictor", default=None, type=str)
 parser.add_argument("--save_model", default=None, type=str, choices=["True", "False"])
-parser.add_argument("--method", default="cpl", type=str, choices=["cpl", "naive", "batchgcp"])
+parser.add_argument("--method", default="naive", type=str, choices=["cpl", "naive", "batchgcp"])
 
 #  Training configuration
 parser.add_argument("--optimizer", type=str, default="adam", choices=["sgd", "adam"], help="Choose optimizer.")
