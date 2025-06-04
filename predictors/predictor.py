@@ -66,8 +66,8 @@ class Predictor:
                 avg_width = total_prediction_width / total_samples
 
                 result_dict = {
-                    f"{self.args.score}_AverageWidth": avg_width,
-                    f"{self.args.score}_Coverage": coverage,
+                    f"AverageWidth": avg_width,
+                    f"Coverage": coverage,
                 }
         else:
             raise NotImplementedError
