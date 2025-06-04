@@ -27,7 +27,6 @@ class BatchGcp_model(NaiveModel):
             y_pred = self.net(data)
             S_cal = torch.cat((S_cal, self.score_function(y_pred, y_true)), 0)
 
-        split_idx = int(0.7 * X_cal.shape[0])
 
         S_cal = S_cal.clone().detach().requires_grad_(False)
         # Definitions and initializations

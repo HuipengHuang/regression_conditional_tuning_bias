@@ -24,8 +24,10 @@ def build_model(args):
         model = CPL_model(net, args)
     elif args.model == "batchgcp":
         model = BatchGcp_model(net, args)
-    else:
+    elif args.model == "naive":
         model = NaiveModel(net, args)
+    else:
+        raise NotImplementedError
     return model
 def load_model(args, net):
         p = f"./data/{args.dataset}_{args.model}{0}net.pth"
