@@ -1,5 +1,8 @@
 import os
-from .cqr_model import mse_model, all_q_model
+from models.net.cqr_net import mse_model, all_q_model
+from models.net.length_optimization_net import SimpleNN
+from models.naive_model import NaiveModel
+from models.cpl import CPL_model
 import torch
 
 def build_model(args):
@@ -11,9 +14,16 @@ def build_model(args):
 
         alpha = args.alpha
         net = all_q_model(quantiles=[alpha / 2, 1 - alpha / 2], in_shape=args.in_shape)
+    elif model_type == "cpl_model":
+        net = SimpleNN(n_binary=10, n_continuous=args.in_shape - 10)
     else:
         raise NotImplementedError
-    return net
+    net = net.to("cuda")
+    if args.method == "cpl":
+        model = CPL_model(net, args)
+    else:
+        model = NaiveModel(net, args)
+    return model
 def load_model(args, net):
         p = f"./data/{args.dataset}_{args.model}{0}net.pth"
 

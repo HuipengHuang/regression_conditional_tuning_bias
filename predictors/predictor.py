@@ -31,8 +31,10 @@ class Predictor:
                 batch_score = self.score_function(y_pred, y_true)
 
                 cal_score = torch.cat((cal_score, batch_score), 0)
+
             N = cal_score.shape[0]
             threshold = torch.quantile(cal_score, math.ceil((1 - alpha) * (N + 1)) / N, dim=0)
+
             self.threshold = threshold
             return threshold
 
@@ -53,11 +55,10 @@ class Predictor:
 
                     y_pred = self.net(data)
 
-                    batch_score = self.score_function(y_pred, y_true)
                     conf_interval = self.score_function.generate_intervals(y_pred, self.threshold)
 
-                    total_coverage += torch.sum((batch_score >= conf_interval[:, 0]).to(torch.int) *
-                                                (batch_score <= conf_interval[:, 1]).to(torch.int))
+                    total_coverage += torch.sum((y_true >= conf_interval[:, 0]).to(torch.int) *
+                                                (y_true <= conf_interval[:, 1]).to(torch.int))
 
                     total_prediction_width += torch.sum(conf_interval[:, 1] - conf_interval[:, 0])
 

@@ -17,7 +17,7 @@ def save_exp_result(args, result_dict, path=None):
     month_day = current_time.strftime("%b%d")
     if path is None:
         path = f"./experiment/{args.algorithm}"
-    name = f"{args.dataset}_{args.model}_{args.loss}loss"
+    name = f"{args.datasets}_{args.model}_{args.loss}loss"
 
     save_path = os.path.join(path, month_day)
     save_path = os.path.join(save_path, args.score)
