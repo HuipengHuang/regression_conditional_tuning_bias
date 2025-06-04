@@ -27,8 +27,8 @@ class BatchGcp_model(NaiveModel):
             y_pred = self.net(data)
             S_cal = torch.cat((S_cal, self.score_function(y_pred, y_true)), 0)
 
-
         S_cal = S_cal.clone().detach().requires_grad_(False)
+
         # Definitions and initializations
         theta_tensor = torch.tensor([1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], requires_grad=True).to("cuda")
         theta_marginal = torch.tensor([1.0], requires_grad=True).to("cuda")
@@ -41,7 +41,7 @@ class BatchGcp_model(NaiveModel):
             # Simplified example operation
             sum_theta = torch.sum(theta_tensor * X_cal[:, :theta_tensor.shape[0]] + theta_marginal, axis=1)
 
-            loss = pinball_loss(sum_theta, S_cal, 0.9).mean()
+            loss = pinball_loss(sum_theta, S_cal, 1 - self.alpha).mean()
 
             loss.backward()
             optimizer.step()

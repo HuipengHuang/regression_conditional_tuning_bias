@@ -1,18 +1,12 @@
-from .naive_model import NaiveModel
-from scores.utils import get_score
+from .predictor import Predictor
 import torch
+import math
 import torch.optim as optim
-from .net.length_optimization_net import SimpleNN
+from models.net.length_optimization_net import SimpleNN
 
-class CPL_model(NaiveModel):
-    def __init__(self, net, args):
-        super().__init__(net, args)
-        self.alpha = args.alpha
-        self.score_function = get_score(args)
-        self.args = args
-        self.h = None
-    def forward(self, x):
-        return self.net(x)
+class CPLPredictor(Predictor):
+    def __init__(self, args, net):
+        super().__init__(args, net)
 
     def maximize_for_h(self, optimizer_h, X, S, h, lambda_tensor, lambda_marginal, alpha, sigma=0.1):
         h.train()
@@ -42,11 +36,10 @@ class CPL_model(NaiveModel):
 
         return lambda_tensor, lambda_marginal, loss_lambda.item()
 
-    def tune(self, tune_loader):
-
+    def calibrate(self, cal_loader, alpha=None):
         X_cal = torch.tensor([], device="cuda")
         S_cal = torch.tensor([], device="cuda")
-        for data, y_true in tune_loader:
+        for data, y_true in cal_loader:
             data = data.to("cuda")
             y_true = y_true.to("cuda")
 
@@ -62,7 +55,6 @@ class CPL_model(NaiveModel):
         S1 = S_cal[:split_idx]
         X2 = X_cal[split_idx:]
         S2 = S_cal[split_idx:]
-        print(X_cal.shape)
 
         lambda_tensor = torch.tensor([5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0], requires_grad=True,
                                      device="cuda")
@@ -76,20 +68,50 @@ class CPL_model(NaiveModel):
             if t % 1000 == 30:
                 optimizer_lambda = optim.Adam([lambda_tensor] + [lambda_marginal], lr=0.01)
             h = SimpleNN(n_binary=10, n_continuous=self.args.in_shape - 10).to("cuda")
-            #h = self.net
+
             self.h = h
             optimizer_h = optim.Adam(self.net.parameters(), lr=0.01)
 
             for epoch in range(2000):
-                loss_h = self.maximize_for_h(optimizer_h, X1, S1, h, lambda_tensor, lambda_marginal, alpha=self.alpha, sigma=0.1)
-                if (epoch+1) % 1500 == 0:
-                    print(f"{t+1} / 60 {epoch+1} / 2000 Loss: {loss_h}")
+                loss_h = self.maximize_for_h(optimizer_h, X1, S1, h, lambda_tensor, lambda_marginal, alpha=self.alpha,
+                                             sigma=0.1)
+                if (epoch + 1) % 1500 == 0:
+                    print(f"{t + 1} / 60 {epoch + 1} / 2000 Loss: {loss_h}")
 
                 if epoch % 1000 == 500:
                     optimizer_h = optim.Adam(self.net.parameters(), lr=0.001)
                 if epoch % 2000 == 1000:
                     optimizer_h = optim.Adam(self.net.parameters(), lr=0.0002)
-            for epoch in range(1):
-                lambda_tensor, lambda_marginal, loss_lambda = self.minimize_for_f(optimizer_lambda, X2, S2, h, lambda_tensor,
-                                                                             lambda_marginal, alpha=self.alpha, sigma=0.1)
 
+            for epoch in range(1):
+                lambda_tensor, lambda_marginal, loss_lambda = self.minimize_for_f(optimizer_lambda, X2, S2, h,
+                                                                                  lambda_tensor,
+                                                                                  lambda_marginal, alpha=self.alpha,
+                                                                                  sigma=0.1)
+    def evaluate(self, test_loader):
+        self.net.eval()
+        self.h.eval()
+
+        total_coverage = 0
+        total_width = 0
+        total_samples = 0
+        with torch.no_grad():
+            for data, y_true in test_loader:
+                data = data.to("cuda")
+                y_true = y_true.to("cuda")
+                y_pred = self.net(data)
+                batch_score = self.score_function(y_pred, y_true)
+
+                total_samples += data.shape[0]
+                threshold = self.h(data)
+                total_coverage += (batch_score <= threshold).sum()
+                total_width += 2 * torch.sum(threshold)
+
+            coverage = total_coverage / total_samples
+            avg_width = total_width / total_samples
+
+            result_dict = {
+                f"AverageWidth": avg_width,
+                f"Coverage": coverage,
+            }
+        return result_dict

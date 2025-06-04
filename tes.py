@@ -69,7 +69,7 @@ def compute_S(X, Y, beta):
 
 S_cal = compute_S(X_cal, Y_cal, beta)
 S_test = compute_S(X_test, Y_test, beta)
-
+print(X_cal.requires_grad, S_cal.requires_grad)
 
 class SimpleNN(nn.Module):
     def __init__(self, n_binary, n_continuous, embedding_dim, dropout_rate=0.1):
