@@ -75,9 +75,9 @@ class CPL_model(NaiveModel):
 
             optimizer_h = optim.Adam(self.net.parameters(), lr=0.01)
 
-            for epoch in range(10):
+            for epoch in range(2000):
                 loss_h = self.maximize_for_h(optimizer_h, X1, S1, self.net, lambda_tensor, lambda_marginal, alpha=self.alpha, sigma=0.1)
-                if epoch % 1500 == 0:
+                if (epoch+1) % 1500 == 0:
                     print(f"{t+1} / 60 {epoch+1} / 2000 Loss: {loss_h}")
 
                 if epoch % 1000 == 500:
