@@ -43,7 +43,6 @@ class CPL_model(NaiveModel):
         return lambda_tensor, lambda_marginal, loss_lambda.item()
 
     def tune(self, tune_loader):
-
         X_cal = torch.tensor([], device="cuda")
         S_cal = torch.tensor([], device="cuda")
         for data, y_true in tune_loader:
@@ -62,7 +61,6 @@ class CPL_model(NaiveModel):
         S1 = S_cal[:split_idx]
         X2 = X_cal[split_idx:]
         S2 = S_cal[split_idx:]
-        print(X_cal.shape)
 
         lambda_tensor = torch.tensor([5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0], requires_grad=True,
                                      device="cuda")
@@ -78,7 +76,7 @@ class CPL_model(NaiveModel):
             h = SimpleNN(n_binary=10, n_continuous=self.args.in_shape - 10).to("cuda")
             #h = self.net
             self.h = h
-            optimizer_h = optim.Adam(self.net.parameters(), lr=0.01)
+            optimizer_h = optim.Adam(self.h.parameters(), lr=0.01)
 
             for epoch in range(2000):
                 loss_h = self.maximize_for_h(optimizer_h, X1, S1, h, lambda_tensor, lambda_marginal, alpha=self.alpha, sigma=0.1)
@@ -86,9 +84,9 @@ class CPL_model(NaiveModel):
                     print(f"{t+1} / 60 {epoch+1} / 2000 Loss: {loss_h}")
 
                 if epoch % 1000 == 500:
-                    optimizer_h = optim.Adam(self.net.parameters(), lr=0.001)
+                    optimizer_h = optim.Adam(self.h.parameters(), lr=0.001)
                 if epoch % 2000 == 1000:
-                    optimizer_h = optim.Adam(self.net.parameters(), lr=0.0002)
+                    optimizer_h = optim.Adam(self.h.parameters(), lr=0.0002)
             for epoch in range(1):
                 lambda_tensor, lambda_marginal, loss_lambda = self.minimize_for_f(optimizer_lambda, X2, S2, h, lambda_tensor,
                                                                              lambda_marginal, alpha=self.alpha, sigma=0.1)

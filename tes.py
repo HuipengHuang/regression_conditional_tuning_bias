@@ -163,7 +163,6 @@ alpha = 0.1
 optimizer_lambda = optim.Adam([lambda_tensor] + [lambda_marginal], lr=1)
 
 for t in range(60):
-    print(t)
     if t % 1000 == 15:
         optimizer_lambda = optim.Adam([lambda_tensor] + [lambda_marginal], lr=0.5)
     if t % 1000 == 30:
